@@ -239,12 +239,21 @@ def get_best_unit(quantity: float, unit: str) -> tuple[float, str]:
     # Arredonda para 2 casas decimais
     return round(quantity, 2), unit_normalized
 
+def normalize_ingredient_name(name: str) -> str:
+    """Normaliza nome do ingrediente removendo acentos e espaços extras"""
+    import unicodedata
+    # Remove acentos
+    normalized = unicodedata.normalize('NFKD', name)
+    normalized = normalized.encode('ASCII', 'ignore').decode('ASCII')
+    # Remove espaços extras e converte para minúscula
+    return ' '.join(normalized.lower().strip().split())
+
 async def aggregate_ingredients(items: List[ShoppingItem]) -> List[ShoppingItem]:
     """Agrega ingredientes com mesmo nome, convertendo unidades quando necessário"""
     aggregated = {}
     
     for item in items:
-        key = item.ingredient_name.lower().strip()
+        key = normalize_ingredient_name(item.ingredient_name)
         
         if key not in aggregated:
             # Normaliza a unidade
