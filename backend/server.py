@@ -278,9 +278,16 @@ async def aggregate_ingredients(items: List[ShoppingItem]) -> List[ShoppingItem]
                 )
                 if converted_unit == existing['unit']:
                     existing['quantity'] += converted_qty
+                    # Adiciona recipe_ids ao item existente
+                    for rid in item.recipe_ids:
+                        if rid not in existing['recipe_ids']:
+                            existing['recipe_ids'].append(rid)
+                    for rname in item.recipe_names:
+                        if rname not in existing['recipe_names']:
+                            existing['recipe_names'].append(rname)
                 else:
                     # Unidades incompatíveis, mantém separado com sufixo
-                    new_key = f"{key}_{item.unit}"
+                    new_key = f"{key}_{normalize_unit(item.unit)}"
                     aggregated[new_key] = {
                         'ingredient_name': item.ingredient_name,
                         'quantity': item.quantity,
@@ -292,7 +299,7 @@ async def aggregate_ingredients(items: List[ShoppingItem]) -> List[ShoppingItem]
                     }
             except:
                 # Mantém separado em caso de erro
-                new_key = f"{key}_{item.unit}"
+                new_key = f"{key}_{normalize_unit(item.unit)}"
                 aggregated[new_key] = {
                     'ingredient_name': item.ingredient_name,
                     'quantity': item.quantity,
@@ -302,14 +309,6 @@ async def aggregate_ingredients(items: List[ShoppingItem]) -> List[ShoppingItem]
                     'recipe_names': item.recipe_names.copy(),
                     'id': str(uuid.uuid4())
                 }
-            
-            # Adiciona recipe_ids
-            for rid in item.recipe_ids:
-                if rid not in existing['recipe_ids']:
-                    existing['recipe_ids'].append(rid)
-            for rname in item.recipe_names:
-                if rname not in existing['recipe_names']:
-                    existing['recipe_names'].append(rname)
     
     # Otimiza unidades para melhor visualização
     result = []
