@@ -223,20 +223,21 @@ def get_best_unit(quantity: float, unit: str) -> tuple[float, str]:
     # Para massa
     if unit_normalized == 'g':
         if quantity >= 1000:
-            return quantity / 1000, 'kg'
+            return round(quantity / 1000, 2), 'kg'
     elif unit_normalized == 'kg':
         if quantity < 1:
-            return quantity * 1000, 'g'
+            return round(quantity * 1000, 2), 'g'
     
     # Para volume
     if unit_normalized == 'ml':
         if quantity >= 1000:
-            return quantity / 1000, 'l'
+            return round(quantity / 1000, 2), 'l'
     elif unit_normalized == 'l':
         if quantity < 1:
-            return quantity * 1000, 'ml'
+            return round(quantity * 1000, 2), 'ml'
     
-    return quantity, unit_normalized
+    # Arredonda para 2 casas decimais
+    return round(quantity, 2), unit_normalized
 
 async def aggregate_ingredients(items: List[ShoppingItem]) -> List[ShoppingItem]:
     """Agrega ingredientes com mesmo nome, convertendo unidades quando necessário"""
