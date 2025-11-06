@@ -81,9 +81,19 @@ function App() {
             path="/"
             element={
               isAuthenticated ? (
-                <Navigate to="/receitas" replace />
+                <Navigate to="/home" replace />
               ) : (
                 <Login onLogin={handleLogin} />
+              )
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              isAuthenticated ? (
+                <Home userName={userName} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
               )
             }
           />
