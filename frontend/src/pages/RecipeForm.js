@@ -21,6 +21,82 @@ const UNITS = [
   "unidade", "pitada", "a gosto"
 ];
 
+// Componente para edição inline de ingrediente
+function EditIngredientRow({ ingredient, onSave, onCancel }) {
+  const [editData, setEditData] = useState({
+    name: ingredient.name,
+    quantity: ingredient.quantity,
+    unit: ingredient.unit,
+    mandatory: ingredient.mandatory
+  });
+
+  return (
+    <div className="bg-amber-50 p-3 rounded-md border-2 border-amber-300">
+      <div className="grid grid-cols-12 gap-2 items-end">
+        <div className="col-span-5">
+          <Label className="text-xs">Nome</Label>
+          <Input
+            value={editData.name}
+            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs">Qtd</Label>
+          <Input
+            type="number"
+            step="0.01"
+            value={editData.quantity}
+            onChange={(e) => setEditData({ ...editData, quantity: parseFloat(e.target.value) })}
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs">Unidade</Label>
+          <Select value={editData.unit} onValueChange={(value) => setEditData({ ...editData, unit: value })}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {UNITS.map((unit) => (
+                <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="col-span-2 flex items-center justify-center">
+          <div className="flex items-center space-x-1">
+            <Checkbox
+              checked={editData.mandatory}
+              onCheckedChange={(checked) => setEditData({ ...editData, mandatory: checked })}
+            />
+            <Label className="text-xs">Obrig.</Label>
+          </div>
+        </div>
+        <div className="col-span-1 flex gap-1">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => onSave(editData)}
+            className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600"
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onCancel}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RecipeForm({ userName, onLogout }) {
   const navigate = useNavigate();
   const { id } = useParams();
