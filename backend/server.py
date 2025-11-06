@@ -498,7 +498,13 @@ async def get_recipes(user_id: str = Depends(get_current_user)):
 
 @api_router.post("/recipes", response_model=Recipe)
 async def create_recipe(recipe_data: RecipeCreate, user_id: str = Depends(get_current_user)):
-    recipe = Recipe(user_id=user_id, **recipe_data.model_dump())
+    recipe_dict = recipe_data.model_dump()
+    recipe_dict['user_id'] = user_id
+    
+    # Estima valores com LLM se necessário
+    recipe_dict = await estimate_recipe_values(recipe_dict)
+    
+    recipe = Recipe(**recipe_dict)
     recipe_doc = recipe.model_dump()
     recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
     await db.recipes.insert_one(recipe_doc)
