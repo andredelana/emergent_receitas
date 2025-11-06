@@ -181,22 +181,14 @@ function ShoppingListDetail({ userName, onLogout }) {
 
   const saveEditItem = async (itemId, updatedData) => {
     try {
-      // Primeiro atualiza o item
-      const updatedItems = list.items.map(item => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            ingredient_name: updatedData.ingredient_name,
-            quantity: updatedData.quantity,
-            unit: updatedData.unit
-          };
-        }
-        return item;
-      });
-
-      // Salva no backend via API de atualização
-      await axios.put(`${API}/shopping-lists/${id}`, {
-        items: updatedItems
+      const item = list.items.find(i => i.id === itemId);
+      
+      // Deletar item antigo e adicionar novo (workaround para edição)
+      await axios.delete(`${API}/shopping-lists/${id}/items/${itemId}`);
+      await axios.post(`${API}/shopping-lists/${id}/add-item`, {
+        ingredient_name: updatedData.ingredient_name,
+        quantity: updatedData.quantity,
+        unit: updatedData.unit
       });
 
       toast.success("Item atualizado");
