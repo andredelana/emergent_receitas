@@ -483,7 +483,18 @@ Se a receita não tiver restrições, retorne array vazio []"""
         
         logger.info(f"Clean Response: {clean_response[:200]}")
         
-        estimated_values = json.loads(clean_response)
+        # Tenta parsear o JSON
+        try:
+            estimated_values = json.loads(clean_response)
+        except json.JSONDecodeError:
+            # Se falhar, tenta encontrar JSON no meio do texto
+            json_match = re.search(r'\{[^{}]*"tempo_preparo"[^{}]*\}', clean_response, re.DOTALL)
+            if json_match:
+                estimated_values = json.loads(json_match.group())
+            else:
+                raise ValueError("Não foi possível extrair JSON da resposta")
+        
+        logger.info(f"Estimated values: {estimated_values}")
         
         # Atualiza apenas os campos que estão vazios ou zero
         if recipe_data.get('tempo_preparo', 0) == 0:
