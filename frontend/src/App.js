@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 import Login from "@/pages/Login";
+import Home from "@/pages/Home";
 import Recipes from "@/pages/Recipes";
 import RecipeForm from "@/pages/RecipeForm";
 import ShoppingLists from "@/pages/ShoppingLists";
