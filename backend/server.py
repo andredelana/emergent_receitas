@@ -1172,10 +1172,9 @@ class WebRecipeImportRequest(BaseModel):
 
 async def scrape_tudogostoso_search(query: str) -> List[WebRecipeResult]:
     """Faz scraping da página de busca do TudoGostoso"""
-    import requests
+    import cloudscraper
     from bs4 import BeautifulSoup
     from urllib.parse import quote
-    import time
     
     try:
         encoded_query = quote(query)
@@ -1183,32 +1182,10 @@ async def scrape_tudogostoso_search(query: str) -> List[WebRecipeResult]:
         
         logger.info(f"Buscando receitas em: {search_url}")
         
-        # Create a session for better cookie handling
-        session = requests.Session()
+        # Create cloudscraper session to bypass Cloudflare
+        scraper = cloudscraper.create_scraper()
         
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0'
-        }
-        
-        # First, visit the main page to get cookies
-        try:
-            main_response = session.get('https://www.tudogostoso.com.br', headers=headers, timeout=10)
-            time.sleep(1)  # Small delay
-        except:
-            pass  # Continue even if main page fails
-        
-        # Now try the search
-        response = session.get(search_url, headers=headers, timeout=15)
+        response = scraper.get(search_url, timeout=20)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
