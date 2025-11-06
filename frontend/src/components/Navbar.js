@@ -25,6 +25,15 @@ function Navbar({ userName, onLogout, currentPage }) {
 
           <div className="flex gap-2">
             <Button
+              data-testid="nav-home-button"
+              variant={isHomePage ? "default" : "ghost"}
+              onClick={() => navigate("/home")}
+              className={isHomePage ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white" : ""}
+            >
+              <ChefHat className="mr-2 h-4 w-4" />
+              Início
+            </Button>
+            <Button
               data-testid="nav-recipes-button"
               variant={isRecipesPage ? "default" : "ghost"}
               onClick={() => navigate("/receitas")}
