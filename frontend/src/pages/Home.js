@@ -125,7 +125,16 @@ function Home({ userName, onLogout }) {
   };
 
   const RecipeCard = ({ recipe, showActions = false }) => (
-    <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur">
+    <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden">
+      {recipe.imagem_url && (
+        <div className="relative h-48 w-full overflow-hidden">
+          <img
+            src={recipe.imagem_url}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
       <CardHeader>
         <CardTitle className="text-lg line-clamp-2" style={{ fontFamily: 'Work Sans, sans-serif' }}>
           {recipe.name}
