@@ -140,6 +140,12 @@ function RecipeForm({ userName, onLogout }) {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (formData.imagem_url) {
+      setImagePreview(formData.imagem_url);
+    }
+  }, [formData.imagem_url]);
+
   const loadRecipe = async () => {
     try {
       const response = await axios.get(`${API}/recipes`);
