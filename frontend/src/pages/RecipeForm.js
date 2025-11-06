@@ -231,7 +231,19 @@ function RecipeForm({ userName, onLogout }) {
       return;
     }
 
+    // Verifica se precisa estimar valores
+    const needsEstimation = 
+      formData.tempo_preparo === 0 || 
+      formData.calorias_por_porcao === 0 || 
+      formData.custo_estimado === 0 || 
+      formData.restricoes.length === 0;
+
     setLoading(true);
+    
+    if (needsEstimation) {
+      toast.info("Estimando valores com IA...", { duration: 3000 });
+    }
+
     try {
       if (isEditing) {
         await axios.put(`${API}/recipes/${id}`, formData);
@@ -240,6 +252,11 @@ function RecipeForm({ userName, onLogout }) {
         await axios.post(`${API}/recipes`, formData);
         toast.success("Receita criada com sucesso!");
       }
+      
+      if (needsEstimation) {
+        toast.success("Valores estimados com sucesso!");
+      }
+      
       navigate("/receitas");
     } catch (error) {
       toast.error("Erro ao salvar receita");
