@@ -207,6 +207,76 @@ function ShoppingListDetail({ userName, onLogout }) {
     setEditingItemId(null);
   };
 
+  const loadRecipes = async () => {
+    try {
+      const response = await axios.get(`${API}/recipes`);
+      setRecipes(response.data);
+      // Inicializa porções padrão para cada receita
+      const initialSelected = {};
+      response.data.forEach(recipe => {
+        initialSelected[recipe.id] = { selected: false, portions: recipe.portions };
+      });
+      setSelectedRecipes(initialSelected);
+    } catch (error) {
+      toast.error("Erro ao carregar receitas");
+    }
+  };
+
+  const openAddRecipeDialog = async () => {
+    setShowAddRecipeDialog(true);
+    await loadRecipes();
+  };
+
+  const toggleRecipeSelection = (recipeId) => {
+    setSelectedRecipes(prev => ({
+      ...prev,
+      [recipeId]: {
+        ...prev[recipeId],
+        selected: !prev[recipeId].selected
+      }
+    }));
+  };
+
+  const updatePortions = (recipeId, portions) => {
+    setSelectedRecipes(prev => ({
+      ...prev,
+      [recipeId]: {
+        ...prev[recipeId],
+        portions: portions
+      }
+    }));
+  };
+
+  const handleAddRecipes = async () => {
+    const selected = Object.entries(selectedRecipes)
+      .filter(([_, data]) => data.selected)
+      .map(([id, data]) => ({ recipe_id: id, portions: data.portions }));
+
+    if (selected.length === 0) {
+      toast.error("Selecione pelo menos uma receita");
+      return;
+    }
+
+    setAddingRecipes(true);
+    try {
+      // Adicionar receitas selecionadas
+      for (const { recipe_id, portions } of selected) {
+        await axios.post(`${API}/shopping-lists/${id}/add-recipe`, {
+          recipe_id,
+          portions
+        });
+      }
+
+      toast.success(`${selected.length} receita(s) adicionada(s) à lista!`);
+      setShowAddRecipeDialog(false);
+      loadList();
+    } catch (error) {
+      toast.error("Erro ao adicionar receitas");
+    } finally {
+      setAddingRecipes(false);
+    }
+  };
+
   if (loading || !list) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-green-50">
