@@ -577,6 +577,10 @@ async def create_recipe(recipe_data: RecipeCreate, user_id: str = Depends(get_cu
     # Estima valores com LLM se necessário
     recipe_dict = await estimate_recipe_values(recipe_dict)
     
+    # Gera imagem com AI se não houver uma
+    if not recipe_dict.get('imagem_url'):
+        recipe_dict['imagem_url'] = await generate_recipe_image(recipe_dict)
+    
     recipe = Recipe(**recipe_dict)
     recipe_doc = recipe.model_dump()
     recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
