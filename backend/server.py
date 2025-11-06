@@ -519,6 +519,47 @@ Se a receita não tiver restrições, retorne array vazio []"""
         # Em caso de erro, retorna os dados originais
         return recipe_data
 
+# Helper function para gerar imagem com AI
+async def generate_recipe_image(recipe_data: dict) -> str:
+    """Gera imagem da receita usando AI"""
+    try:
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return ""
+        
+        from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
+        import base64
+        
+        # Prepara prompt descritivo
+        ingredients_list = ", ".join([ing['name'] for ing in recipe_data.get('ingredients', [])[:5]])
+        
+        prompt = f"""A beautifully plated dish of {recipe_data.get('name', 'food')}, professional food photography, 
+appetizing presentation, natural lighting, close-up view showing the main ingredients: {ingredients_list}. 
+High quality, restaurant style, vibrant colors, appetizing."""
+        
+        logger.info(f"Generating image for recipe: {recipe_data.get('name')}")
+        
+        # Gera imagem
+        image_gen = OpenAIImageGeneration(api_key=llm_key)
+        images = await image_gen.generate_images(
+            prompt=prompt,
+            model="gpt-image-1",
+            number_of_images=1
+        )
+        
+        if images and len(images) > 0:
+            # Converte para base64
+            image_base64 = base64.b64encode(images[0]).decode('utf-8')
+            image_data_url = f"data:image/png;base64,{image_base64}"
+            logger.info(f"Image generated successfully for recipe: {recipe_data.get('name')}")
+            return image_data_url
+        
+        return ""
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar imagem com AI: {str(e)}")
+        return ""
+
 # Recipe endpoints
 @api_router.get("/recipes", response_model=List[Recipe])
 async def get_recipes(user_id: str = Depends(get_current_user)):
