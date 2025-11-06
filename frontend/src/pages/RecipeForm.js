@@ -49,6 +49,7 @@ function RecipeForm({ userName, onLogout }) {
 
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
 
   useEffect(() => {
     if (isEditing) {
