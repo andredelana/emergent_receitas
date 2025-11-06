@@ -20,6 +20,72 @@ const UNITS = [
   "unidade", "pitada", "a gosto"
 ];
 
+// Componente para edição inline de item da lista
+function EditItemRow({ item, onSave, onCancel }) {
+  const [editData, setEditData] = useState({
+    ingredient_name: item.ingredient_name,
+    quantity: item.quantity,
+    unit: item.unit
+  });
+
+  return (
+    <div className="bg-amber-50 p-3 rounded-lg border-2 border-amber-300">
+      <div className="grid grid-cols-12 gap-2 items-end">
+        <div className="col-span-6">
+          <Label className="text-xs">Nome do Item</Label>
+          <Input
+            value={editData.ingredient_name}
+            onChange={(e) => setEditData({ ...editData, ingredient_name: e.target.value })}
+            className="h-9 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs">Quantidade</Label>
+          <Input
+            type="number"
+            step="0.01"
+            value={editData.quantity}
+            onChange={(e) => setEditData({ ...editData, quantity: parseFloat(e.target.value) })}
+            className="h-9 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs">Unidade</Label>
+          <Select value={editData.unit} onValueChange={(value) => setEditData({ ...editData, unit: value })}>
+            <SelectTrigger className="h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {UNITS.map((unit) => (
+                <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="col-span-2 flex gap-1">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => onSave(editData)}
+            className="h-9 flex-1 bg-green-500 hover:bg-green-600"
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onCancel}
+            className="h-9 flex-1"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ShoppingListDetail({ userName, onLogout }) {
   const navigate = useNavigate();
   const { id } = useParams();
