@@ -26,6 +26,7 @@ function ShoppingListDetail({ userName, onLogout }) {
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddItemDialog, setShowAddItemDialog] = useState(false);
+  const [editingItemId, setEditingItemId] = useState(null);
   const [newItem, setNewItem] = useState({
     ingredient_name: "",
     quantity: "",
