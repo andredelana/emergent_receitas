@@ -460,10 +460,22 @@ Seja realista nas estimativas. Se a receita não se encaixar em nenhuma restriç
         
         # Parse JSON da resposta
         import json
+        logger.info(f"LLM Response: {response[:200]}")  # Log primeiros 200 chars
+        
         clean_response = response.strip()
-        if clean_response.startswith('```'):
-            clean_response = re.sub(r'^```[\\w]*\\n', '', clean_response)
-            clean_response = re.sub(r'\\n```$', '', clean_response)
+        
+        # Remove markdown code blocks
+        if '```json' in clean_response.lower():
+            clean_response = re.sub(r'```json\s*', '', clean_response, flags=re.IGNORECASE)
+            clean_response = re.sub(r'```\s*$', '', clean_response)
+        elif clean_response.startswith('```'):
+            clean_response = re.sub(r'^```[^\n]*\n', '', clean_response)
+            clean_response = re.sub(r'\n```$', '', clean_response)
+        
+        # Remove espaços e quebras de linha extras
+        clean_response = clean_response.strip()
+        
+        logger.info(f"Clean Response: {clean_response[:200]}")
         
         estimated_values = json.loads(clean_response)
         
