@@ -284,16 +284,28 @@ function RecipeForm({ userName, onLogout }) {
     }
 
     try {
+      let savedRecipe;
       if (isEditing) {
-        await axios.put(`${API}/recipes/${id}`, formData);
+        const response = await axios.put(`${API}/recipes/${id}`, formData);
+        savedRecipe = response.data;
         toast.success("Receita atualizada com sucesso!");
       } else {
-        await axios.post(`${API}/recipes`, formData);
+        const response = await axios.post(`${API}/recipes`, formData);
+        savedRecipe = response.data;
         toast.success("Receita criada com sucesso!");
       }
       
-      if (needsEstimation) {
-        toast.success("Valores estimados com sucesso!");
+      if (needsEstimation || needsImage) {
+        const messages = [];
+        if (needsEstimation) messages.push("Valores estimados");
+        if (needsImage) messages.push("Imagem gerada");
+        toast.success(`${messages.join(" e ")} com sucesso!`);
+      }
+      
+      // Atualiza a imagem localmente se foi gerada
+      if (savedRecipe && savedRecipe.imagem_url) {
+        setImagePreview(savedRecipe.imagem_url);
+        setFormData(prev => ({ ...prev, imagem_url: savedRecipe.imagem_url }));
       }
       
       navigate("/receitas");
