@@ -291,11 +291,7 @@ function Home({ userName, onLogout }) {
                     <p className="text-gray-600 text-sm">Receitas com ingredientes que você já usa</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {suggestions.slice(0, 6).map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} showActions={true} />
-                  ))}
-                </div>
+                <RecipeCarousel recipes={suggestions} showActions={true} />
               </section>
             )}
 
@@ -310,11 +306,7 @@ function Home({ userName, onLogout }) {
                     <p className="text-gray-600 text-sm">Receitas populares entre todos os usuários</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {trending.slice(0, 6).map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} showActions={true} />
-                  ))}
-                </div>
+                <RecipeCarousel recipes={trending} showActions={true} />
               </section>
             )}
 
