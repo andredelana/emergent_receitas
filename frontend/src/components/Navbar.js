@@ -2,10 +2,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChefHat, List, LogOut, BookOpen } from "lucide-react";
 
-function Navbar({ userName, onLogout }) {
+function Navbar({ userName, onLogout, currentPage }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isHomePage = currentPage === "home" || location.pathname === "/home";
   const isRecipesPage = location.pathname.startsWith("/receitas");
   const isListsPage = location.pathname.startsWith("/listas");
 
