@@ -875,6 +875,130 @@ async def clear_bought_items(list_id: str, user_id: str = Depends(get_current_us
     
     return {"message": "Itens comprados removidos"}
 
+# Helper function para gerar sugestões de receitas com LLM
+async def generate_recipe_suggestions(user_id: str) -> List[Recipe]:
+    """Gera 5 sugestões de receitas baseadas nos ingredientes do usuário"""
+    try:
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return []
+        
+        # Busca receitas do usuário para extrair ingredientes
+        user_recipes = await db.recipes.find(
+            {"user_id": user_id, "is_suggestion": False}, 
+            {"_id": 0, "ingredients": 1}
+        ).to_list(1000)
+        
+        if len(user_recipes) == 0:
+            return []
+        
+        # Extrai ingredientes únicos
+        all_ingredients = set()
+        for recipe in user_recipes:
+            for ing in recipe.get('ingredients', []):
+                all_ingredients.add(ing['name'].lower().strip())
+        
+        if len(all_ingredients) < 3:
+            return []
+        
+        ingredients_list = ", ".join(sorted(list(all_ingredients))[:20])  # Max 20 ingredientes
+        
+        # Prompt para o LLM
+        prompt = f"""Crie 5 receitas BRASILEIRAS deliciosas usando principalmente estes ingredientes que o usuário já conhece:
+{ingredients_list}
+
+IMPORTANTE: Retorne APENAS um array JSON válido, sem texto adicional.
+
+Formato EXATO:
+[
+  {{
+    "name": "Nome da Receita",
+    "portions": 4,
+    "notes": "Descrição breve e apetitosa da receita",
+    "ingredients": [
+      {{"name": "ingrediente1", "quantity": 200, "unit": "g", "mandatory": true}},
+      {{"name": "ingrediente2", "quantity": 1, "unit": "unidade", "mandatory": true}}
+    ]
+  }}
+]
+
+Regras:
+- Criar receitas variadas (prato principal, sobremesa, lanche, etc)
+- Usar principalmente ingredientes da lista fornecida
+- Pode adicionar 1-2 ingredientes básicos extras se necessário
+- portions: número inteiro (2-8)
+- Cada receita deve ter 4-8 ingredientes
+- notes: 1-2 frases descritivas
+- Receitas devem ser realistas e práticas"""
+
+        logger.info(f"Generating recipe suggestions for user {user_id}")
+        
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"suggestions-{user_id}-{uuid.uuid4()}",
+            system_message="Você é um chef brasileiro especialista. Retorne APENAS JSON válido."
+        ).with_model("openai", "gpt-4o")
+        
+        from emergentintegrations.llm.chat import UserMessage
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Parse JSON
+        import json
+        clean_response = response.strip()
+        
+        # Remove markdown
+        if '```json' in clean_response.lower():
+            clean_response = re.sub(r'```json\s*', '', clean_response, flags=re.IGNORECASE)
+            clean_response = re.sub(r'```\s*$', '', clean_response)
+        elif clean_response.startswith('```'):
+            clean_response = re.sub(r'^```[^\n]*\n', '', clean_response)
+            clean_response = re.sub(r'\n```$', '', clean_response)
+        
+        clean_response = clean_response.strip()
+        
+        recipes_data = json.loads(clean_response)
+        
+        # Cria as receitas no banco
+        created_recipes = []
+        for recipe_data in recipes_data[:5]:  # Garante máximo 5
+            # Adiciona campos obrigatórios
+            recipe_data['user_id'] = user_id
+            recipe_data['link'] = ""
+            recipe_data['tempo_preparo'] = 0
+            recipe_data['calorias_por_porcao'] = 0
+            recipe_data['custo_estimado'] = 0.0
+            recipe_data['restricoes'] = []
+            recipe_data['imagem_url'] = ""
+            recipe_data['is_suggestion'] = True
+            
+            # Estima valores
+            recipe_data = await estimate_recipe_values(recipe_data)
+            
+            # Gera imagem
+            recipe_data['imagem_url'] = await generate_recipe_image(recipe_data)
+            
+            # Cria receita
+            recipe = Recipe(**recipe_data)
+            recipe_doc = recipe.model_dump()
+            recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
+            await db.recipes.insert_one(recipe_doc)
+            
+            created_recipes.append(recipe)
+            logger.info(f"Created suggestion recipe: {recipe.name}")
+        
+        # Atualiza timestamp da última geração
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"last_suggestions_date": datetime.now(timezone.utc).date().isoformat()}}
+        )
+        
+        logger.info(f"Generated {len(created_recipes)} recipe suggestions for user {user_id}")
+        return created_recipes
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar sugestões de receitas: {str(e)}")
+        return []
+
 # Home page endpoints
 @api_router.get("/home/favorites", response_model=List[Recipe])
 async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
