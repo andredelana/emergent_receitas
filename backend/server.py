@@ -82,6 +82,7 @@ class RecipeCreate(BaseModel):
     calorias_por_porcao: Optional[int] = 0
     custo_estimado: Optional[float] = 0.0
     restricoes: List[str] = []
+    imagem_url: Optional[str] = ""
 
 class RecipeUpdate(BaseModel):
     name: Optional[str] = None
@@ -93,6 +94,7 @@ class RecipeUpdate(BaseModel):
     calorias_por_porcao: Optional[int] = None
     custo_estimado: Optional[float] = None
     restricoes: Optional[List[str]] = None
+    imagem_url: Optional[str] = None
 
 class ImportRecipeRequest(BaseModel):
     clipboard_text: str
