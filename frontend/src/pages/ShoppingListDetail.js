@@ -363,6 +363,17 @@ function ShoppingListDetail({ userName, onLogout }) {
               Limpar Comprados
             </Button>
           )}
+          {list.items.length > 0 && (
+            <Button
+              data-testid="clear-all-items-button"
+              variant="outline"
+              onClick={clearAllItems}
+              className="border-red-500 text-red-700 hover:bg-red-100"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Limpar Lista
+            </Button>
+          )}
         </div>
 
         {list.items.length === 0 ? (
