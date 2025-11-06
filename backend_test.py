@@ -722,6 +722,11 @@ def main():
     tester.test_recipe_import_llm()
     tester.test_update_recipe()
     
+    # TudoGostoso web scraping tests
+    print("\n📋 TUDOGOSTOSO WEB SCRAPING TESTS")
+    tester.test_search_web_recipes()
+    tester.test_import_from_tudogostoso()
+    
     # Shopping list tests
     print("\n📋 SHOPPING LIST TESTS")
     tester.test_get_shopping_lists()
