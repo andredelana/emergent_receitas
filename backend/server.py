@@ -65,6 +65,10 @@ class Recipe(BaseModel):
     link: Optional[str] = ""
     notes: Optional[str] = ""
     ingredients: List[Ingredient]
+    tempo_preparo: Optional[int] = 0  # em minutos
+    calorias_por_porcao: Optional[int] = 0
+    custo_estimado: Optional[float] = 0.0  # em BRL
+    restricoes: List[str] = []  # vegetariano, vegano, sem gluten, sem lactose, etc
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RecipeCreate(BaseModel):
@@ -73,6 +77,10 @@ class RecipeCreate(BaseModel):
     link: Optional[str] = ""
     notes: Optional[str] = ""
     ingredients: List[Ingredient]
+    tempo_preparo: Optional[int] = 0
+    calorias_por_porcao: Optional[int] = 0
+    custo_estimado: Optional[float] = 0.0
+    restricoes: List[str] = []
 
 class RecipeUpdate(BaseModel):
     name: Optional[str] = None
@@ -80,6 +88,10 @@ class RecipeUpdate(BaseModel):
     link: Optional[str] = None
     notes: Optional[str] = None
     ingredients: Optional[List[Ingredient]] = None
+    tempo_preparo: Optional[int] = None
+    calorias_por_porcao: Optional[int] = None
+    custo_estimado: Optional[float] = None
+    restricoes: Optional[List[str]] = None
 
 class ImportRecipeRequest(BaseModel):
     clipboard_text: str
