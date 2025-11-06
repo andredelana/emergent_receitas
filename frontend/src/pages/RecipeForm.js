@@ -128,6 +128,21 @@ function RecipeForm({ userName, onLogout }) {
     });
   };
 
+  const startEditIngredient = (index) => {
+    setEditingIngredientIndex(index);
+  };
+
+  const saveEditIngredient = (index, updatedIngredient) => {
+    const newIngredients = [...formData.ingredients];
+    newIngredients[index] = updatedIngredient;
+    setFormData({ ...formData, ingredients: newIngredients });
+    setEditingIngredientIndex(null);
+  };
+
+  const cancelEditIngredient = () => {
+    setEditingIngredientIndex(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
