@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingCart, Plus, Trash2, Star, Calendar } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ShoppingCart, Plus, Trash2, Star, Calendar, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -18,7 +19,10 @@ function ShoppingLists({ userName, onLogout }) {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipes, setSelectedRecipes] = useState({});
   const [newListName, setNewListName] = useState("");
+  const [creatingList, setCreatingList] = useState(false);
 
   useEffect(() => {
     loadLists();
@@ -35,22 +39,86 @@ function ShoppingLists({ userName, onLogout }) {
     }
   };
 
+  const loadRecipes = async () => {
+    try {
+      const response = await axios.get(`${API}/recipes`);
+      setRecipes(response.data);
+      // Inicializa porções padrão para cada receita
+      const initialSelected = {};
+      response.data.forEach(recipe => {
+        initialSelected[recipe.id] = { selected: false, portions: recipe.portions };
+      });
+      setSelectedRecipes(initialSelected);
+    } catch (error) {
+      toast.error("Erro ao carregar receitas");
+    }
+  };
+
+  const openCreateDialog = async () => {
+    const defaultName = format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR });
+    setNewListName(defaultName);
+    setShowCreateDialog(true);
+    await loadRecipes();
+  };
+
+  const toggleRecipeSelection = (recipeId) => {
+    setSelectedRecipes(prev => ({
+      ...prev,
+      [recipeId]: {
+        ...prev[recipeId],
+        selected: !prev[recipeId].selected
+      }
+    }));
+  };
+
+  const updatePortions = (recipeId, portions) => {
+    setSelectedRecipes(prev => ({
+      ...prev,
+      [recipeId]: {
+        ...prev[recipeId],
+        portions: portions
+      }
+    }));
+  };
+
   const handleCreateList = async () => {
     if (!newListName.trim()) {
-      // Gera nome padrão com data
-      const defaultName = format(new Date(), "dd/MM/yyyy", { locale: ptBR });
-      setNewListName(defaultName);
+      toast.error("Digite um nome para a lista");
       return;
     }
 
+    const selected = Object.entries(selectedRecipes)
+      .filter(([_, data]) => data.selected)
+      .map(([id, data]) => ({ recipe_id: id, portions: data.portions }));
+
+    if (selected.length === 0) {
+      toast.error("Selecione pelo menos uma receita");
+      return;
+    }
+
+    setCreatingList(true);
     try {
-      await axios.post(`${API}/shopping-lists`, { name: newListName });
+      // Criar lista vazia
+      const createResponse = await axios.post(`${API}/shopping-lists`, { name: newListName });
+      const newListId = createResponse.data.id;
+
+      // Adicionar receitas selecionadas
+      for (const { recipe_id, portions } of selected) {
+        await axios.post(`${API}/shopping-lists/${newListId}/add-recipe`, {
+          recipe_id,
+          portions
+        });
+      }
+
       toast.success("Lista criada com sucesso!");
       setNewListName("");
       setShowCreateDialog(false);
       loadLists();
+      navigate(`/listas/${newListId}`);
     } catch (error) {
       toast.error("Erro ao criar lista");
+    } finally {
+      setCreatingList(false);
     }
   };
 
@@ -69,12 +137,6 @@ function ShoppingLists({ userName, onLogout }) {
         toast.error("Erro ao deletar lista");
       }
     }
-  };
-
-  const openCreateDialog = () => {
-    const defaultName = format(new Date(), "dd/MM/yyyy", { locale: ptBR });
-    setNewListName(defaultName);
-    setShowCreateDialog(true);
   };
 
   return (
@@ -214,32 +276,95 @@ function ShoppingLists({ userName, onLogout }) {
       </div>
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent data-testid="create-list-dialog">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" data-testid="create-list-dialog">
           <DialogHeader>
             <DialogTitle>Nova Lista de Compras</DialogTitle>
             <DialogDescription>
-              Dê um nome para sua nova lista. Por padrão, usamos a data atual.
+              Selecione as receitas e ajuste as porções desejadas
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Label htmlFor="list-name">Nome da Lista</Label>
-            <Input
-              id="list-name"
-              data-testid="list-name-input"
-              value={newListName}
-              onChange={(e) => setNewListName(e.target.value)}
-              placeholder="Ex: Compras da Semana"
-              className="mt-2"
-            />
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="list-name">Nome da Lista</Label>
+              <Input
+                id="list-name"
+                data-testid="list-name-input"
+                value={newListName}
+                onChange={(e) => setNewListName(e.target.value)}
+                placeholder="Ex: Compras da Semana"
+                className="mt-2"
+              />
+            </div>
+
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-3">Selecione as Receitas</h3>
+              {recipes.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  Você ainda não tem receitas cadastradas
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {recipes.map((recipe) => (
+                    <div
+                      key={recipe.id}
+                      className={`border rounded-lg p-3 transition-all ${
+                        selectedRecipes[recipe.id]?.selected
+                          ? "border-green-400 bg-green-50"
+                          : "border-gray-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={selectedRecipes[recipe.id]?.selected || false}
+                          onCheckedChange={() => toggleRecipeSelection(recipe.id)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{recipe.name}</h4>
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs text-gray-600">Porções:</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={selectedRecipes[recipe.id]?.portions || recipe.portions}
+                                onChange={(e) => updatePortions(recipe.id, parseInt(e.target.value) || 1)}
+                                disabled={!selectedRecipes[recipe.id]?.selected}
+                                className="w-20 h-8 text-sm"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            {recipe.ingredients.length} ingredientes • Padrão: {recipe.portions} porções
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancelar</Button>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} disabled={creatingList}>
+              Cancelar
+            </Button>
             <Button
               data-testid="confirm-create-list-button"
               onClick={handleCreateList}
+              disabled={creatingList || recipes.length === 0}
               className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
             >
-              Criar Lista
+              {creatingList ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                "Criar Lista"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
