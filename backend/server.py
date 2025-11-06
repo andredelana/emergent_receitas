@@ -517,7 +517,28 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, user_id: str 
         raise HTTPException(status_code=404, detail="Receita não encontrada")
     
     update_data = {k: v for k, v in recipe_data.model_dump().items() if v is not None}
+    
     if update_data:
+        # Merge com dados existentes para estimativa
+        merged_data = {**recipe, **update_data}
+        
+        # Verifica se precisa estimar (campos vazios ou foram alterados ingredientes)
+        needs_estimation = (
+            merged_data.get('tempo_preparo', 0) == 0 or
+            merged_data.get('calorias_por_porcao', 0) == 0 or
+            merged_data.get('custo_estimado', 0) == 0 or
+            not merged_data.get('restricoes') or
+            'ingredients' in update_data  # Ingredientes foram alterados
+        )
+        
+        if needs_estimation:
+            merged_data = await estimate_recipe_values(merged_data)
+            # Atualiza apenas os campos estimados
+            update_data['tempo_preparo'] = merged_data.get('tempo_preparo')
+            update_data['calorias_por_porcao'] = merged_data.get('calorias_por_porcao')
+            update_data['custo_estimado'] = merged_data.get('custo_estimado')
+            update_data['restricoes'] = merged_data.get('restricoes')
+        
         await db.recipes.update_one({"id": recipe_id}, {"$set": update_data})
     
     updated_recipe = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
