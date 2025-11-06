@@ -109,6 +109,42 @@ function ShoppingListDetail({ userName, onLogout }) {
     }
   };
 
+  const startEditItem = (itemId) => {
+    setEditingItemId(itemId);
+  };
+
+  const saveEditItem = async (itemId, updatedData) => {
+    try {
+      // Primeiro atualiza o item
+      const updatedItems = list.items.map(item => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            ingredient_name: updatedData.ingredient_name,
+            quantity: updatedData.quantity,
+            unit: updatedData.unit
+          };
+        }
+        return item;
+      });
+
+      // Salva no backend via API de atualização
+      await axios.put(`${API}/shopping-lists/${id}`, {
+        items: updatedItems
+      });
+
+      toast.success("Item atualizado");
+      setEditingItemId(null);
+      loadList();
+    } catch (error) {
+      toast.error("Erro ao atualizar item");
+    }
+  };
+
+  const cancelEditItem = () => {
+    setEditingItemId(null);
+  };
+
   if (loading || !list) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-green-50">
