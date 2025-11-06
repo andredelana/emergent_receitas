@@ -616,6 +616,12 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, user_id: str 
             update_data['custo_estimado'] = merged_data.get('custo_estimado')
             update_data['restricoes'] = merged_data.get('restricoes')
         
+        # Gera imagem se não houver uma e ingredientes foram alterados
+        if (not merged_data.get('imagem_url') or 'ingredients' in update_data) and 'imagem_url' not in update_data:
+            new_image = await generate_recipe_image(merged_data)
+            if new_image:
+                update_data['imagem_url'] = new_image
+        
         await db.recipes.update_one({"id": recipe_id}, {"$set": update_data})
     
     updated_recipe = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
