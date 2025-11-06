@@ -291,38 +291,58 @@ function ShoppingListDetail({ userName, onLogout }) {
                 <CardContent>
                   <div className="space-y-3" data-testid="pending-items-list">
                     {pendingItems.map((item) => (
-                      <div
-                        key={item.id}
-                        data-testid={`item-${item.id}`}
-                        className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-shadow"
-                      >
-                        <Checkbox
-                          data-testid={`item-checkbox-${item.id}`}
-                          checked={item.bought}
-                          onCheckedChange={() => toggleItemBought(item.id, item.bought)}
-                          className="mt-1"
+                      editingItemId === item.id ? (
+                        <EditItemRow
+                          key={item.id}
+                          item={item}
+                          onSave={(data) => saveEditItem(item.id, data)}
+                          onCancel={cancelEditItem}
                         />
-                        <div className="flex-1">
-                          <p className="font-medium">{item.ingredient_name}</p>
-                          <p className="text-sm text-gray-600">
-                            {item.quantity} {item.unit}
-                          </p>
-                          {item.recipe_names && item.recipe_names.length > 0 && (
-                            <p className="text-xs text-gray-400 mt-1">
-                              Usado em: {item.recipe_names.join(", ")}
-                            </p>
-                          )}
-                        </div>
-                        <Button
-                          data-testid={`delete-item-${item.id}`}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteItem(item.id)}
-                          className="text-red-600 hover:bg-red-50"
+                      ) : (
+                        <div
+                          key={item.id}
+                          data-testid={`item-${item.id}`}
+                          className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-shadow"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          <Checkbox
+                            data-testid={`item-checkbox-${item.id}`}
+                            checked={item.bought}
+                            onCheckedChange={() => toggleItemBought(item.id, item.bought)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium">{item.ingredient_name}</p>
+                            <p className="text-sm text-gray-600">
+                              {item.quantity} {item.unit}
+                            </p>
+                            {item.recipe_names && item.recipe_names.length > 0 && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                Usado em: {item.recipe_names.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              data-testid={`edit-item-${item.id}`}
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEditItem(item.id)}
+                              className="text-orange-600 hover:bg-orange-50"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              data-testid={`delete-item-${item.id}`}
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteItem(item.id)}
+                              className="text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
                     ))}
                   </div>
                 </CardContent>
