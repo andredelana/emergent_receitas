@@ -415,6 +415,78 @@ async def login(credentials: UserLogin):
     token = create_token(user['id'], user['username'])
     return TokenResponse(token=token, name=user['name'], username=user['username'])
 
+# Helper function para estimar valores com LLM
+async def estimate_recipe_values(recipe_data: dict) -> dict:
+    """Estima tempo, calorias, custo e restrições usando LLM"""
+    try:
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return recipe_data
+        
+        # Prepara os ingredientes para o prompt
+        ingredients_text = "\n".join([
+            f"- {ing['name']}: {ing['quantity']} {ing['unit']}"
+            for ing in recipe_data.get('ingredients', [])
+        ])
+        
+        # Prompt para o LLM
+        prompt = f"""Analise a seguinte receita e estime os valores solicitados:
+
+Nome: {recipe_data.get('name', 'Sem nome')}
+Porções: {recipe_data.get('portions', 1)}
+Ingredientes:
+{ingredients_text}
+
+Retorne APENAS um JSON válido no seguinte formato exato:
+{{
+  "tempo_preparo": <número inteiro de minutos>,
+  "calorias_por_porcao": <número inteiro de calorias por porção>,
+  "custo_estimado": <número decimal do custo total em BRL>,
+  "restricoes": ["lista", "de", "restrições"]
+}}
+
+Para restrições, use APENAS estas opções quando aplicável: "vegetariano", "vegano", "sem gluten", "sem lactose"
+
+Seja realista nas estimativas. Se a receita não se encaixar em nenhuma restrição, retorne lista vazia."""
+
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"estimate-{uuid.uuid4()}",
+            system_message="Você é um especialista em nutrição e culinária. Retorne APENAS JSON válido, sem texto adicional."
+        ).with_model("openai", "gpt-4o")
+        
+        from emergentintegrations.llm.chat import UserMessage
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Parse JSON da resposta
+        import json
+        clean_response = response.strip()
+        if clean_response.startswith('```'):
+            clean_response = re.sub(r'^```[\\w]*\\n', '', clean_response)
+            clean_response = re.sub(r'\\n```$', '', clean_response)
+        
+        estimated_values = json.loads(clean_response)
+        
+        # Atualiza apenas os campos que estão vazios ou zero
+        if recipe_data.get('tempo_preparo', 0) == 0:
+            recipe_data['tempo_preparo'] = estimated_values.get('tempo_preparo', 0)
+        
+        if recipe_data.get('calorias_por_porcao', 0) == 0:
+            recipe_data['calorias_por_porcao'] = estimated_values.get('calorias_por_porcao', 0)
+        
+        if recipe_data.get('custo_estimado', 0) == 0:
+            recipe_data['custo_estimado'] = estimated_values.get('custo_estimado', 0.0)
+        
+        if not recipe_data.get('restricoes') or len(recipe_data.get('restricoes', [])) == 0:
+            recipe_data['restricoes'] = estimated_values.get('restricoes', [])
+        
+        return recipe_data
+        
+    except Exception as e:
+        logger.error(f"Erro ao estimar valores com LLM: {str(e)}")
+        # Em caso de erro, retorna os dados originais
+        return recipe_data
+
 # Recipe endpoints
 @api_router.get("/recipes", response_model=List[Recipe])
 async def get_recipes(user_id: str = Depends(get_current_user)):
