@@ -276,11 +276,7 @@ function Home({ userName, onLogout }) {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favorites.slice(0, 6).map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} />
-                  ))}
-                </div>
+                <RecipeCarousel recipes={favorites} showActions={false} />
               </section>
             )}
 
