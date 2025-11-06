@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Testar a funcionalidade de geração automática de imagens para receitas usando LLM quando uma receita é salva (nova ou editada) sem imagem"
+user_problem_statement: "Testar os novos endpoints de busca e importação de receitas do TudoGostoso"
 
 backend:
   - task: "Login with dev credentials"
