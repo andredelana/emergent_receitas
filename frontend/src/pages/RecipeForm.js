@@ -133,6 +133,12 @@ function RecipeForm({ userName, onLogout }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
+  
+  // Estados para busca web
+  const [webSearchLoading, setWebSearchLoading] = useState(false);
+  const [webRecipes, setWebRecipes] = useState([]);
+  const [showWebRecipes, setShowWebRecipes] = useState(false);
+  const [importingFromWeb, setImportingFromWeb] = useState(false);
 
   useEffect(() => {
     if (isEditing) {
