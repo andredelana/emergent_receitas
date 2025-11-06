@@ -435,7 +435,16 @@ function Recipes({ userName, onLogout }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="recipes-grid">
             {filteredRecipes.map((recipe) => (
-              <Card key={recipe.id} className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur" data-testid={`recipe-card-${recipe.id}`}>
+              <Card key={recipe.id} className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden" data-testid={`recipe-card-${recipe.id}`}>
+                {recipe.imagem_url && (
+                  <div className="relative h-48 w-full overflow-hidden">
+                    <img
+                      src={recipe.imagem_url}
+                      alt={recipe.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <CardTitle className="text-xl flex-1" style={{ fontFamily: 'Work Sans, sans-serif' }}>
