@@ -1158,6 +1158,191 @@ async def copy_recipe_to_my_recipes(recipe_id: str, user_id: str = Depends(get_c
     
     return {"message": "Receita adicionada às suas receitas", "recipe_id": new_recipe.id}
 
+# Web scraping endpoints para TudoGostoso
+class WebRecipeSearchRequest(BaseModel):
+    query: str
+
+class WebRecipeResult(BaseModel):
+    name: str
+    url: str
+    image_url: str
+
+class WebRecipeImportRequest(BaseModel):
+    url: str
+
+async def scrape_tudogostoso_search(query: str) -> List[WebRecipeResult]:
+    """Faz scraping da página de busca do TudoGostoso"""
+    import requests
+    from bs4 import BeautifulSoup
+    from urllib.parse import quote
+    
+    try:
+        encoded_query = quote(query)
+        search_url = f"https://www.tudogostoso.com.br/busca?q={encoded_query}"
+        
+        logger.info(f"Buscando receitas em: {search_url}")
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        response = requests.get(search_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        results = []
+        # Busca por links de receitas
+        recipe_links = soup.find_all('a', href=re.compile(r'/receita/\d+-'))
+        
+        seen_urls = set()
+        for link in recipe_links[:5]:  # Limita a 5 resultados
+            recipe_url = link.get('href', '')
+            if not recipe_url.startswith('http'):
+                recipe_url = f"https://www.tudogostoso.com.br{recipe_url}"
+            
+            # Evita duplicatas
+            if recipe_url in seen_urls:
+                continue
+            seen_urls.add(recipe_url)
+            
+            # Extrai nome
+            name = link.get_text(strip=True)
+            if not name:
+                continue
+            
+            # Busca imagem próxima ao link
+            img = link.find('img')
+            if not img:
+                parent = link.find_parent()
+                if parent:
+                    img = parent.find('img')
+            
+            image_url = ''
+            if img:
+                image_url = img.get('src', '') or img.get('data-src', '')
+                if image_url and not image_url.startswith('http'):
+                    image_url = f"https:{image_url}" if image_url.startswith('//') else f"https://www.tudogostoso.com.br{image_url}"
+            
+            results.append(WebRecipeResult(
+                name=name,
+                url=recipe_url,
+                image_url=image_url
+            ))
+        
+        logger.info(f"Encontradas {len(results)} receitas")
+        return results
+        
+    except Exception as e:
+        logger.error(f"Erro ao fazer scraping: {str(e)}")
+        return []
+
+async def scrape_tudogostoso_recipe(url: str) -> dict:
+    """Faz scraping detalhado de uma receita do TudoGostoso"""
+    import requests
+    from bs4 import BeautifulSoup
+    
+    try:
+        logger.info(f"Importando receita de: {url}")
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Extrai nome
+        name = ''
+        h1 = soup.find('h1')
+        if h1:
+            name = h1.get_text(strip=True)
+        
+        # Extrai ingredientes
+        ingredients = []
+        ingredient_sections = soup.find_all(['li', 'div'], class_=re.compile(r'ingredient|item'))
+        
+        for ing_elem in ingredient_sections:
+            text = ing_elem.get_text(strip=True)
+            if text and len(text) > 2:
+                # Tenta parsear quantidade e nome
+                match = re.match(r'([0-9.,/]+)\s*([a-zá-úã-ü]+)?\s+(?:de\s+)?(.+)', text, re.IGNORECASE)
+                if match:
+                    quantity = match.group(1).replace(',', '.')
+                    unit = match.group(2) or 'unidade'
+                    ing_name = match.group(3)
+                    
+                    try:
+                        qty = float(quantity) if '/' not in quantity else eval(quantity)
+                    except:
+                        qty = 1.0
+                    
+                    ingredients.append({
+                        'name': ing_name.strip(),
+                        'quantity': qty,
+                        'unit': unit.strip(),
+                        'mandatory': True
+                    })
+                else:
+                    # Se não conseguir parsear, adiciona como texto simples
+                    ingredients.append({
+                        'name': text,
+                        'quantity': 1.0,
+                        'unit': 'unidade',
+                        'mandatory': True
+                    })
+        
+        # Extrai modo de preparo
+        preparation_steps = []
+        steps = soup.find_all(['li', 'p'], class_=re.compile(r'step|modo|preparo|instruction'))
+        for step in steps:
+            text = step.get_text(strip=True)
+            if text and len(text) > 10:
+                preparation_steps.append(text)
+        
+        notes = '\n'.join(preparation_steps) if preparation_steps else ''
+        
+        # Tenta extrair porções
+        portions = 4  # Default
+        portions_text = soup.find(string=re.compile(r'(\d+)\s*porç[õo]es?', re.IGNORECASE))
+        if portions_text:
+            match = re.search(r'(\d+)', portions_text)
+            if match:
+                portions = int(match.group(1))
+        
+        result = {
+            'name': name or 'Receita Importada',
+            'portions': portions,
+            'link': url,
+            'notes': notes,
+            'ingredients': ingredients[:15]  # Limita a 15 ingredientes
+        }
+        
+        logger.info(f"Receita importada: {name}, {len(ingredients)} ingredientes")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Erro ao importar receita: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao importar receita: {str(e)}")
+
+@api_router.post("/recipes/search-web")
+async def search_recipes_web(data: WebRecipeSearchRequest, user_id: str = Depends(get_current_user)):
+    """Busca receitas no TudoGostoso.com.br"""
+    if not data.query or len(data.query) < 2:
+        raise HTTPException(status_code=400, detail="Query muito curta")
+    
+    results = await scrape_tudogostoso_search(data.query)
+    return {"recipes": results}
+
+@api_router.post("/recipes/import-from-tudogostoso")
+async def import_recipe_from_tudogostoso(data: WebRecipeImportRequest, user_id: str = Depends(get_current_user)):
+    """Importa uma receita completa do TudoGostoso"""
+    if not data.url or 'tudogostoso.com.br' not in data.url:
+        raise HTTPException(status_code=400, detail="URL inválida")
+    
+    recipe_data = await scrape_tudogostoso_recipe(data.url)
+    return recipe_data
+
 # Include router
 app.include_router(api_router)
 
