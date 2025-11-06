@@ -117,8 +117,11 @@ function RecipeForm({ userName, onLogout }) {
     tempo_preparo: 0,
     calorias_por_porcao: 0,
     custo_estimado: 0,
-    restricoes: []
+    restricoes: [],
+    imagem_url: ""
   });
+  
+  const [imagePreview, setImagePreview] = useState("");
 
   const [currentIngredient, setCurrentIngredient] = useState({
     name: "",
