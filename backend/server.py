@@ -680,6 +680,114 @@ async def clear_bought_items(list_id: str, user_id: str = Depends(get_current_us
     
     return {"message": "Itens comprados removidos"}
 
+# Home page endpoints
+@api_router.get("/home/favorites", response_model=List[Recipe])
+async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
+    """Retorna receitas favoritas (mais adicionadas às listas pelo usuário)"""
+    # Busca todas as listas do usuário
+    lists = await db.shopping_lists.find({"user_id": user_id}, {"_id": 0, "items": 1}).to_list(1000)
+    
+    # Conta quantas vezes cada receita foi adicionada
+    recipe_count = {}
+    for lst in lists:
+        for item in lst.get('items', []):
+            for recipe_id in item.get('recipe_ids', []):
+                recipe_count[recipe_id] = recipe_count.get(recipe_id, 0) + 1
+    
+    # Ordena por contagem e pega top 6
+    top_recipe_ids = sorted(recipe_count.items(), key=lambda x: x[1], reverse=True)[:6]
+    top_ids = [rid for rid, _ in top_recipe_ids]
+    
+    if not top_ids:
+        return []
+    
+    # Busca as receitas
+    recipes = await db.recipes.find({"id": {"$in": top_ids}, "user_id": user_id}, {"_id": 0}).to_list(6)
+    for recipe in recipes:
+        if isinstance(recipe['created_at'], str):
+            recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
+    
+    return recipes
+
+@api_router.get("/home/suggestions", response_model=List[Recipe])
+async def get_suggested_recipes(user_id: str = Depends(get_current_user)):
+    """Retorna sugestões de receitas com ingredientes similares"""
+    # Busca receitas do usuário
+    user_recipes = await db.recipes.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    
+    if len(user_recipes) < 2:
+        return []
+    
+    # Coleta todos os ingredientes usados
+    all_ingredients = set()
+    for recipe in user_recipes:
+        for ing in recipe.get('ingredients', []):
+            all_ingredients.add(normalize_ingredient_name(ing['name']))
+    
+    # Busca outras receitas (de outros usuários) com ingredientes similares
+    # Por enquanto, retorna receitas aleatórias do próprio usuário como placeholder
+    suggestions = user_recipes[:6]
+    
+    return suggestions
+
+@api_router.get("/home/trending", response_model=List[Recipe])
+async def get_trending_recipes(user_id: str = Depends(get_current_user)):
+    """Retorna receitas em tendência (mais adicionadas globalmente)"""
+    # Busca todas as listas de todos os usuários
+    all_lists = await db.shopping_lists.find({}, {"_id": 0, "items": 1}).to_list(10000)
+    
+    # Conta quantas vezes cada receita foi adicionada globalmente
+    global_recipe_count = {}
+    for lst in all_lists:
+        for item in lst.get('items', []):
+            for recipe_id in item.get('recipe_ids', []):
+                global_recipe_count[recipe_id] = global_recipe_count.get(recipe_id, 0) + 1
+    
+    # Ordena por contagem e pega top 6
+    top_recipe_ids = sorted(global_recipe_count.items(), key=lambda x: x[1], reverse=True)[:6]
+    top_ids = [rid for rid, _ in top_recipe_ids]
+    
+    if not top_ids:
+        # Se não houver dados, retorna receitas aleatórias
+        recipes = await db.recipes.find({}, {"_id": 0}).to_list(6)
+    else:
+        # Busca as receitas (de qualquer usuário)
+        recipes = await db.recipes.find({"id": {"$in": top_ids}}, {"_id": 0}).to_list(6)
+    
+    for recipe in recipes:
+        if isinstance(recipe['created_at'], str):
+            recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
+    
+    return recipes
+
+@api_router.post("/recipes/{recipe_id}/copy")
+async def copy_recipe_to_my_recipes(recipe_id: str, user_id: str = Depends(get_current_user)):
+    """Copia uma receita para as receitas do usuário"""
+    # Busca a receita original
+    original_recipe = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
+    if not original_recipe:
+        raise HTTPException(status_code=404, detail="Receita não encontrada")
+    
+    # Verifica se já não é do usuário
+    if original_recipe['user_id'] == user_id:
+        return {"message": "Receita já está nas suas receitas", "recipe_id": recipe_id}
+    
+    # Cria uma cópia para o usuário
+    new_recipe = Recipe(
+        user_id=user_id,
+        name=original_recipe['name'],
+        portions=original_recipe['portions'],
+        link=original_recipe.get('link', ''),
+        notes=original_recipe.get('notes', ''),
+        ingredients=[Ingredient(**ing) for ing in original_recipe['ingredients']]
+    )
+    
+    recipe_doc = new_recipe.model_dump()
+    recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
+    await db.recipes.insert_one(recipe_doc)
+    
+    return {"message": "Receita adicionada às suas receitas", "recipe_id": new_recipe.id}
+
 # Include router
 app.include_router(api_router)
 
