@@ -37,3 +37,13 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #d97706, #b45309);
 }
+
+/* Esconder scrollbar para carrossel */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
