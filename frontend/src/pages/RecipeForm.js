@@ -272,10 +272,15 @@ function RecipeForm({ userName, onLogout }) {
       formData.custo_estimado === 0 || 
       formData.restricoes.length === 0;
 
+    const needsImage = !formData.imagem_url || formData.imagem_url === "";
+
     setLoading(true);
     
-    if (needsEstimation) {
-      toast.info("Estimando valores com IA...", { duration: 3000 });
+    if (needsEstimation || needsImage) {
+      const messages = [];
+      if (needsEstimation) messages.push("valores");
+      if (needsImage) messages.push("imagem");
+      toast.info(`Gerando ${messages.join(" e ")} com IA... Isso pode levar até 30 segundos.`, { duration: 5000 });
     }
 
     try {
