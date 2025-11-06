@@ -1030,24 +1030,47 @@ async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
 
 @api_router.get("/home/suggestions", response_model=List[Recipe])
 async def get_suggested_recipes(user_id: str = Depends(get_current_user)):
-    """Retorna sugestões de receitas com ingredientes similares"""
-    # Busca receitas do usuário
-    user_recipes = await db.recipes.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    """Retorna sugestões de receitas geradas com LLM (1x por dia)"""
+    
+    # Busca receitas não-sugeridas do usuário
+    user_recipes = await db.recipes.find(
+        {"user_id": user_id, "is_suggestion": False}, 
+        {"_id": 0}
+    ).to_list(1000)
     
     if len(user_recipes) < 2:
         return []
     
-    # Coleta todos os ingredientes usados
-    all_ingredients = set()
-    for recipe in user_recipes:
-        for ing in recipe.get('ingredients', []):
-            all_ingredients.add(normalize_ingredient_name(ing['name']))
+    # Verifica se já gerou sugestões hoje
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    today = datetime.now(timezone.utc).date().isoformat()
+    last_suggestions_date = user.get('last_suggestions_date') if user else None
     
-    # Busca outras receitas (de outros usuários) com ingredientes similares
-    # Por enquanto, retorna receitas aleatórias do próprio usuário como placeholder
-    suggestions = user_recipes[:6]
+    # Se não gerou hoje, busca sugestões existentes primeiro
+    existing_suggestions = await db.recipes.find(
+        {"user_id": user_id, "is_suggestion": True},
+        {"_id": 0}
+    ).to_list(10)
     
-    return suggestions
+    # Processa datas
+    for recipe in existing_suggestions:
+        if isinstance(recipe['created_at'], str):
+            recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
+    
+    # Se precisa gerar novas (primeira vez do dia ou não tem nenhuma)
+    if last_suggestions_date != today or len(existing_suggestions) == 0:
+        logger.info(f"Generating new suggestions for user {user_id}")
+        
+        # Remove sugestões antigas
+        if len(existing_suggestions) > 0:
+            await db.recipes.delete_many({"user_id": user_id, "is_suggestion": True})
+        
+        # Gera novas sugestões
+        new_suggestions = await generate_recipe_suggestions(user_id)
+        return new_suggestions
+    
+    # Retorna sugestões existentes
+    return existing_suggestions[:5]
 
 @api_router.get("/home/trending", response_model=List[Recipe])
 async def get_trending_recipes(user_id: str = Depends(get_current_user)):
