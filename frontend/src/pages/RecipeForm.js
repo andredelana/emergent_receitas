@@ -383,6 +383,69 @@ function RecipeForm({ userName, onLogout }) {
                 />
               </div>
 
+              {/* Campos adicionais */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tempo">Tempo de Preparo (min)</Label>
+                  <Input
+                    id="tempo"
+                    type="number"
+                    min="0"
+                    value={formData.tempo_preparo}
+                    onChange={(e) => setFormData({ ...formData, tempo_preparo: parseInt(e.target.value) || 0 })}
+                    placeholder="Ex: 30"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="calorias">Calorias/Porção (kcal)</Label>
+                  <Input
+                    id="calorias"
+                    type="number"
+                    min="0"
+                    value={formData.calorias_por_porcao}
+                    onChange={(e) => setFormData({ ...formData, calorias_por_porcao: parseInt(e.target.value) || 0 })}
+                    placeholder="Ex: 350"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="custo">Custo Estimado (R$)</Label>
+                  <Input
+                    id="custo"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.custo_estimado}
+                    onChange={(e) => setFormData({ ...formData, custo_estimado: parseFloat(e.target.value) || 0 })}
+                    placeholder="Ex: 25.00"
+                  />
+                </div>
+              </div>
+
+              {/* Restrições Alimentares */}
+              <div className="space-y-2">
+                <Label>Restrições Alimentares</Label>
+                <div className="flex flex-wrap gap-4">
+                  {["vegetariano", "vegano", "sem gluten", "sem lactose"].map((restricao) => (
+                    <div key={restricao} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`restricao-${restricao}`}
+                        checked={formData.restricoes.includes(restricao)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFormData({ ...formData, restricoes: [...formData.restricoes, restricao] });
+                          } else {
+                            setFormData({ ...formData, restricoes: formData.restricoes.filter(r => r !== restricao) });
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`restricao-${restricao}`} className="text-sm font-normal capitalize cursor-pointer">
+                        {restricao}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold mb-4">Ingredientes</h3>
 
