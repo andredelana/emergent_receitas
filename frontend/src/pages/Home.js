@@ -295,9 +295,9 @@ function Home({ userName, onLogout }) {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      Sugestões para Você
+                      Com Seus Ingredientes Favoritos
                     </h2>
-                    <p className="text-gray-600 text-sm">Receitas com ingredientes que você já usa</p>
+                    <p className="text-gray-600 text-sm">Receitas criadas especialmente para você com IA • Atualizado diariamente</p>
                   </div>
                 </div>
                 <RecipeCarousel recipes={suggestions} showActions={true} />
