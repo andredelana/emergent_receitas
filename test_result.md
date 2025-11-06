@@ -236,9 +236,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Create recipe without image - auto-generate image"
-    - "Update recipe without image - auto-generate image"
-    - "Image generation using OpenAI gpt-image-1"
+    - "TudoGostoso web recipe search"
+    - "TudoGostoso recipe import"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
