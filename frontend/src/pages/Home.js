@@ -63,6 +63,67 @@ function Home({ userName, onLogout }) {
     }
   };
 
+  // Componente de Carrossel
+  const RecipeCarousel = ({ recipes, showActions = false }) => {
+    const scrollRef = useRef(null);
+
+    const scroll = (direction) => {
+      const container = scrollRef.current;
+      if (container) {
+        const scrollAmount = 400; // largura aproximada de um card + gap
+        const newScrollLeft = direction === 'left' 
+          ? container.scrollLeft - scrollAmount 
+          : container.scrollLeft + scrollAmount;
+        
+        container.scrollTo({
+          left: newScrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    };
+
+    if (!recipes || recipes.length === 0) return null;
+
+    return (
+      <div className="relative group">
+        {/* Botão Esquerda */}
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-4"
+          aria-label="Anterior"
+        >
+          <ChevronLeft className="w-6 h-6 text-gray-700" />
+        </button>
+
+        {/* Container de Cards */}
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {recipes.map((recipe) => (
+            <div key={recipe.id} className="flex-shrink-0" style={{ width: '350px' }}>
+              <RecipeCard recipe={recipe} showActions={showActions} />
+            </div>
+          ))}
+        </div>
+
+        {/* Botão Direita */}
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -mr-4"
+          aria-label="Próximo"
+        >
+          <ChevronRight className="w-6 h-6 text-gray-700" />
+        </button>
+      </div>
+    );
+  };
+
   const RecipeCard = ({ recipe, showActions = false }) => (
     <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur">
       <CardHeader>
