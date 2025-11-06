@@ -21,7 +21,7 @@ def test_image_generation_flow():
     print("\n1️⃣ Testing Login...")
     login_response = requests.post(
         f"{api_url}/auth/login",
-        json={"email": "dev", "password": "55555"},
+        json={"username": "dev", "password": "55555"},
         headers={'Content-Type': 'application/json'}
     )
     
