@@ -70,6 +70,7 @@ class Recipe(BaseModel):
     custo_estimado: Optional[float] = 0.0  # em BRL
     restricoes: List[str] = []  # vegetariano, vegano, sem gluten, sem lactose, etc
     imagem_url: Optional[str] = ""  # URL ou base64 da imagem
+    is_suggestion: bool = False  # True se é uma receita sugerida pelo sistema
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RecipeCreate(BaseModel):
