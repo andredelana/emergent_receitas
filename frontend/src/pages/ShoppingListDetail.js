@@ -92,7 +92,11 @@ function ShoppingListDetail({ userName, onLogout }) {
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddItemDialog, setShowAddItemDialog] = useState(false);
+  const [showAddRecipeDialog, setShowAddRecipeDialog] = useState(false);
   const [editingItemId, setEditingItemId] = useState(null);
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipes, setSelectedRecipes] = useState({});
+  const [addingRecipes, setAddingRecipes] = useState(false);
   const [newItem, setNewItem] = useState({
     ingredient_name: "",
     quantity: "",
