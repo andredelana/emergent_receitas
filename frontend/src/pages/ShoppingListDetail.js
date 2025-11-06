@@ -566,6 +566,89 @@ function ShoppingListDetail({ userName, onLogout }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showAddRecipeDialog} onOpenChange={setShowAddRecipeDialog}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" data-testid="add-recipe-to-list-dialog">
+          <DialogHeader>
+            <DialogTitle>Adicionar Receitas à Lista</DialogTitle>
+            <DialogDescription>
+              Selecione as receitas e ajuste as porções desejadas
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-3">Selecione as Receitas</h3>
+              {recipes.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-8">
+                  Você ainda não tem receitas cadastradas
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {recipes.map((recipe) => (
+                    <div
+                      key={recipe.id}
+                      className={`border rounded-lg p-3 transition-all ${
+                        selectedRecipes[recipe.id]?.selected
+                          ? "border-orange-400 bg-orange-50"
+                          : "border-gray-200 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={selectedRecipes[recipe.id]?.selected || false}
+                          onCheckedChange={() => toggleRecipeSelection(recipe.id)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{recipe.name}</h4>
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs text-gray-600">Porções:</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={selectedRecipes[recipe.id]?.portions || recipe.portions}
+                                onChange={(e) => updatePortions(recipe.id, parseInt(e.target.value) || 1)}
+                                disabled={!selectedRecipes[recipe.id]?.selected}
+                                className="w-20 h-8 text-sm"
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            {recipe.ingredients.length} ingredientes • Padrão: {recipe.portions} porções
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowAddRecipeDialog(false)} disabled={addingRecipes}>
+              Cancelar
+            </Button>
+            <Button
+              data-testid="confirm-add-recipes-button"
+              onClick={handleAddRecipes}
+              disabled={addingRecipes || recipes.length === 0}
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+            >
+              {addingRecipes ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adicionando...
+                </>
+              ) : (
+                "Adicionar à Lista"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
