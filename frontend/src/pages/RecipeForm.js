@@ -113,7 +113,11 @@ function RecipeForm({ userName, onLogout }) {
     portions: 1,
     link: "",
     notes: "",
-    ingredients: []
+    ingredients: [],
+    tempo_preparo: 0,
+    calorias_por_porcao: 0,
+    custo_estimado: 0,
+    restricoes: []
   });
 
   const [currentIngredient, setCurrentIngredient] = useState({
