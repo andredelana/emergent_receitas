@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Trash2, Clipboard, Loader2, ChefHat } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Clipboard, Loader2, ChefHat, Edit, Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const UNITS = [
