@@ -461,14 +461,33 @@ function RecipeForm({ userName, onLogout }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome da Receita *</Label>
-                  <Input
-                    id="name"
-                    data-testid="recipe-name-input"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ex: Bolo de Chocolate"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="name"
+                      data-testid="recipe-name-input"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Ex: Bolo de Chocolate"
+                      required
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={searchWebRecipes}
+                      disabled={webSearchLoading || !formData.name}
+                      className="whitespace-nowrap"
+                    >
+                      {webSearchLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Buscar na Web
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="portions">Porções *</Label>
@@ -483,6 +502,68 @@ function RecipeForm({ userName, onLogout }) {
                   />
                 </div>
               </div>
+              
+              {/* Carrossel de receitas da web */}
+              {showWebRecipes && webRecipes.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-lg font-semibold">Receitas encontradas no TudoGostoso:</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowWebRecipes(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar">
+                    {webRecipes.map((recipe, index) => (
+                      <Card key={index} className="min-w-[280px] snap-start flex-shrink-0 hover:shadow-lg transition-shadow">
+                        <CardContent className="p-4">
+                          {recipe.image_url && (
+                            <img
+                              src={recipe.image_url}
+                              alt={recipe.name}
+                              className="w-full h-40 object-cover rounded-md mb-3"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <h4 className="font-semibold text-sm mb-3 line-clamp-2">{recipe.name}</h4>
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(recipe.url, '_blank')}
+                              className="w-full"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-2" />
+                              Visitar Site
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => importRecipeFromWeb(recipe.url)}
+                              disabled={importingFromWeb}
+                              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+                            >
+                              {importingFromWeb ? (
+                                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                              ) : (
+                                <ChefHat className="h-3 w-3 mr-2" />
+                              )}
+                              Importar Receita
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="link">Link (opcional)</Label>
