@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Star, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Star, Sparkles, Edit, Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 const UNITS = [
