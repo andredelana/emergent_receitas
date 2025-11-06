@@ -422,6 +422,50 @@ function RecipeForm({ userName, onLogout }) {
                 />
               </div>
 
+              {/* Upload de Imagem */}
+              <div className="space-y-2">
+                <Label htmlFor="image">Imagem da Receita (opcional)</Label>
+                <div className="flex items-start gap-4">
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-48 h-48 object-cover rounded-lg border-2 border-gray-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={removeImage}
+                        className="absolute top-2 right-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                      <div className="text-center">
+                        <ChefHat className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Sem imagem</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Faça upload de uma imagem ou deixe vazio para gerar automaticamente com IA
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="notes">Observações (opcional)</Label>
                 <Textarea
