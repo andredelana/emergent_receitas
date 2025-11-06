@@ -390,31 +390,52 @@ function RecipeForm({ userName, onLogout }) {
                   <div className="space-y-2" data-testid="ingredients-list">
                     <p className="text-sm font-semibold text-gray-700">Ingredientes adicionados:</p>
                     {formData.ingredients.map((ing, idx) => (
-                      <div
-                        key={idx}
-                        data-testid={`ingredient-item-${idx}`}
-                        className="flex items-center justify-between bg-white p-3 rounded-md border border-gray-200"
-                      >
-                        <div className="flex-1">
-                          <span className="font-medium">{ing.name}</span>
-                          <span className="text-gray-600 ml-2">
-                            {ing.quantity} {ing.unit}
-                          </span>
-                          {!ing.mandatory && (
-                            <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Opcional</span>
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          data-testid={`remove-ingredient-${idx}`}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeIngredient(idx)}
-                          className="text-red-600 hover:bg-red-50"
+                      editingIngredientIndex === idx ? (
+                        <EditIngredientRow
+                          key={idx}
+                          ingredient={ing}
+                          onSave={(updated) => saveEditIngredient(idx, updated)}
+                          onCancel={cancelEditIngredient}
+                        />
+                      ) : (
+                        <div
+                          key={idx}
+                          data-testid={`ingredient-item-${idx}`}
+                          className="flex items-center justify-between bg-white p-3 rounded-md border border-gray-200"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          <div className="flex-1">
+                            <span className="font-medium">{ing.name}</span>
+                            <span className="text-gray-600 ml-2">
+                              {ing.quantity} {ing.unit}
+                            </span>
+                            {!ing.mandatory && (
+                              <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Opcional</span>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              type="button"
+                              data-testid={`edit-ingredient-${idx}`}
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEditIngredient(idx)}
+                              className="text-orange-600 hover:bg-orange-50"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              data-testid={`remove-ingredient-${idx}`}
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeIngredient(idx)}
+                              className="text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
                     ))}
                   </div>
                 )}
