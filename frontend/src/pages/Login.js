@@ -105,9 +105,6 @@ function Login({ onLogin }) {
                       "Entrar"
                     )}
                   </Button>
-                  <p className="text-xs text-center text-gray-500 mt-2">
-                    Login dev: <strong>dev</strong> / Senha: <strong>55555</strong>
-                  </p>
                 </form>
               </TabsContent>
 
