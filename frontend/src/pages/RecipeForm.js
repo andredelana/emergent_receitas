@@ -232,6 +232,31 @@ function RecipeForm({ userName, onLogout }) {
     setEditingIngredientIndex(null);
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Verifica tamanho (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Imagem muito grande. Máximo 5MB.");
+        return;
+      }
+
+      // Converte para base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setImagePreview(base64String);
+        setFormData({ ...formData, imagem_url: base64String });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview("");
+    setFormData({ ...formData, imagem_url: "" });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
