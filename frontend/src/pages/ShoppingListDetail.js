@@ -321,6 +321,14 @@ function ShoppingListDetail({ userName, onLogout }) {
 
         <div className="flex gap-3 mb-6">
           <Button
+            data-testid="add-recipe-to-list-button"
+            onClick={openAddRecipeDialog}
+            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+          >
+            <ChefHat className="mr-2 h-4 w-4" />
+            Adicionar Receita
+          </Button>
+          <Button
             data-testid="add-manual-item-button"
             onClick={() => setShowAddItemDialog(true)}
             className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
