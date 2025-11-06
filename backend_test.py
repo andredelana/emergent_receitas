@@ -523,6 +523,13 @@ def main():
     print("\n📋 RECIPE TESTS")
     tester.test_get_recipes()
     tester.test_create_recipe()
+    
+    # Image generation tests (main focus)
+    print("\n📋 IMAGE GENERATION TESTS")
+    tester.test_create_recipe_without_image_auto_generation()
+    tester.test_update_recipe_without_image_auto_generation()
+    
+    # Other recipe tests
     tester.test_ingredient_suggestions()
     tester.test_recipe_import_llm()
     tester.test_update_recipe()
