@@ -13,6 +13,7 @@ class RecipeAppTester:
         self.tests_passed = 0
         self.quick_list_id = None
         self.test_recipe_id = None
+        self.test_recipe_url = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
         """Run a single API test"""
