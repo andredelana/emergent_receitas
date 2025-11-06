@@ -437,17 +437,23 @@ Porções: {recipe_data.get('portions', 1)}
 Ingredientes:
 {ingredients_text}
 
-Retorne APENAS um JSON válido no seguinte formato exato:
+IMPORTANTE: Retorne APENAS um objeto JSON válido, sem nenhum texto adicional antes ou depois.
+
+Formato EXATO do JSON:
 {{
-  "tempo_preparo": <número inteiro de minutos>,
-  "calorias_por_porcao": <número inteiro de calorias por porção>,
-  "custo_estimado": <número decimal do custo total em BRL>,
-  "restricoes": ["lista", "de", "restrições"]
+  "tempo_preparo": 30,
+  "calorias_por_porcao": 450,
+  "custo_estimado": 25.50,
+  "restricoes": ["vegetariano"]
 }}
 
-Para restrições, use APENAS estas opções quando aplicável: "vegetariano", "vegano", "sem gluten", "sem lactose"
+Regras:
+- tempo_preparo: número inteiro em minutos (tempo total de preparo)
+- calorias_por_porcao: número inteiro de calorias por porção
+- custo_estimado: número decimal do custo total em BRL (considere preços médios brasileiros)
+- restricoes: array de strings. Use APENAS: "vegetariano", "vegano", "sem gluten", "sem lactose" quando aplicável
 
-Seja realista nas estimativas. Se a receita não se encaixar em nenhuma restrição, retorne lista vazia."""
+Se a receita não tiver restrições, retorne array vazio []"""
 
         chat = LlmChat(
             api_key=llm_key,
