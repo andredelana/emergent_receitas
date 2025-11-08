@@ -708,12 +708,15 @@ async def import_recipe_from_clipboard(data: ImportRecipeRequest, user_id: str =
         if not recipe_data.get('notes'):
             recipe_data['notes'] = ''
         
-        # Cria receita
+        # Retorna apenas os dados extraídos, sem criar no banco
+        # O frontend carregará no formulário e o usuário salvará manualmente
         recipe_create = RecipeCreate(**recipe_data)
-        recipe = Recipe(user_id=user_id, **recipe_create.model_dump())
-        recipe_doc = recipe.model_dump()
-        recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
-        await db.recipes.insert_one(recipe_doc)
+        # Cria objeto Recipe temporário apenas para validação e resposta
+        recipe = Recipe(
+            id=str(uuid.uuid4()),  # ID temporário
+            user_id=user_id, 
+            **recipe_create.model_dump()
+        )
         
         return recipe
         
