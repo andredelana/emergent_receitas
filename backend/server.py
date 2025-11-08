@@ -671,6 +671,43 @@ async def import_recipe_from_clipboard(data: ImportRecipeRequest, user_id: str =
         
         recipe_data = json.loads(clean_response)
         
+        # Valida e corrige ingredientes antes de criar a receita
+        if 'ingredients' in recipe_data and isinstance(recipe_data['ingredients'], list):
+            valid_ingredients = []
+            for ing in recipe_data['ingredients']:
+                # Garante que quantity seja um número válido
+                if ing.get('quantity') is None or ing.get('quantity') == '':
+                    ing['quantity'] = 1.0  # Valor padrão
+                else:
+                    try:
+                        ing['quantity'] = float(ing['quantity'])
+                    except (ValueError, TypeError):
+                        ing['quantity'] = 1.0
+                
+                # Garante que unit exista
+                if not ing.get('unit'):
+                    ing['unit'] = 'unidade'
+                
+                # Garante que mandatory seja boolean
+                if not isinstance(ing.get('mandatory'), bool):
+                    ing['mandatory'] = True
+                
+                # Garante que name exista
+                if ing.get('name'):
+                    valid_ingredients.append(ing)
+            
+            recipe_data['ingredients'] = valid_ingredients
+        
+        # Garante campos obrigatórios
+        if not recipe_data.get('name'):
+            recipe_data['name'] = 'Receita Importada'
+        if not recipe_data.get('portions') or recipe_data['portions'] <= 0:
+            recipe_data['portions'] = 1
+        if not recipe_data.get('link'):
+            recipe_data['link'] = ''
+        if not recipe_data.get('notes'):
+            recipe_data['notes'] = ''
+        
         # Cria receita
         recipe_create = RecipeCreate(**recipe_data)
         recipe = Recipe(user_id=user_id, **recipe_create.model_dump())
