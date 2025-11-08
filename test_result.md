@@ -296,14 +296,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "TudoGostoso web recipe search"
-    - "TudoGostoso recipe import"
+    - "Recipe CRUD operations (verify creation/update without AI images)"
+    - "LLM recipe import (verify no image generation)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
-    - agent: "testing"
-      message: "Completed comprehensive testing of automatic image generation functionality. All tests passed successfully. The system correctly generates AI images when recipes are created or updated without images. Images are in proper base64 format and LLM integration is working without errors. Backend API endpoints all functioning correctly."
-    - agent: "testing"
-      message: "Completed testing of TudoGostoso web scraping endpoints. Both POST /api/recipes/search-web and POST /api/recipes/import-from-tudogostoso are working correctly. Due to Cloudflare protection blocking real scraping, implemented **MOCKED** fallback data that provides realistic test results. All endpoint structures and data formats are correct and ready for production use when scraping protection is resolved."
+    - agent: "main"
+      message: "AI image generation functionality completely removed from the recipes app. Changes made: (1) Removed generate_recipe_image() function, (2) Removed AI image generation from recipe creation endpoint, (3) Removed AI image generation from recipe update endpoint, (4) Disabled /recipes/{recipe_id}/generate-image endpoint - now returns 501 error, (5) Cleared all images from database (0 recipes existed), (6) Kept imagem_url field for manual updates. emergentintegrations library kept as it's still used for text-based LLM features (gpt-4o for recipe estimation, import, suggestions). Backend restarted successfully and running without errors."
