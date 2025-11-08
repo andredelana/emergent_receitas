@@ -1443,10 +1443,49 @@ Escolha receitas variadas: uma com carne, uma vegetariana, e uma doce."""
         
         if quick_list:
             for recipe_id in created_recipe_ids:
-                await axios.post(f"http://localhost:8001/api/shopping-lists/{quick_list['id']}/add-recipe", 
-                    json={"recipe_id": recipe_id, "portions": 4},
-                    headers={"Authorization": f"Bearer {create_token(user_id, user.get('username', 'user'))}"}
-                )
+                # Adiciona receita à lista diretamente
+                original_recipe = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
+                if not original_recipe:
+                    continue
+                
+                # Calcula ingredientes ajustados
+                ratio = 4 / original_recipe['portions']
+                for ing in original_recipe['ingredients']:
+                    adjusted_qty = ing['quantity'] * ratio
+                    ingredient_name = ing['name']
+                    unit = ing['unit']
+                    
+                    # Verifica se já existe na lista
+                    existing_item = next(
+                        (item for item in quick_list['items'] if item['ingredient_name'].lower() == ingredient_name.lower() and item['unit'] == unit),
+                        None
+                    )
+                    
+                    if existing_item:
+                        # Atualiza quantidade
+                        existing_item['quantity'] += adjusted_qty
+                        if recipe_id not in existing_item.get('recipe_ids', []):
+                            existing_item['recipe_ids'].append(recipe_id)
+                        if original_recipe['name'] not in existing_item.get('recipe_names', []):
+                            existing_item['recipe_names'].append(original_recipe['name'])
+                    else:
+                        # Adiciona novo item
+                        new_item = {
+                            'id': str(uuid.uuid4()),
+                            'ingredient_name': ingredient_name,
+                            'quantity': adjusted_qty,
+                            'unit': unit,
+                            'bought': False,
+                            'recipe_ids': [recipe_id],
+                            'recipe_names': [original_recipe['name']]
+                        }
+                        quick_list['items'].append(new_item)
+            
+            # Atualiza a lista no banco
+            await db.shopping_lists.update_one(
+                {"id": quick_list['id']},
+                {"$set": {"items": quick_list['items']}}
+            )
         
         logger.info(f"Receitas adicionadas à lista rápida")
         
