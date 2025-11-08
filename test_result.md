@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Testar os novos endpoints de busca e importação de receitas do TudoGostoso"
+user_problem_statement: "Removed AI image generation functionality from recipes app. Images now only set manually by users. All AI image generation code and dependencies removed."
 
 backend:
   - task: "Login with dev credentials"
