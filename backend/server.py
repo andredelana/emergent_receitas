@@ -527,7 +527,12 @@ Se a receita não tiver restrições, retorne array vazio []"""
 # Recipe endpoints
 @api_router.get("/recipes", response_model=List[Recipe])
 async def get_recipes(user_id: str = Depends(get_current_user)):
-    recipes = await db.recipes.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    # Busca apenas receitas reais do usuário (não sugestões) e limita a 500
+    recipes = await db.recipes.find(
+        {"user_id": user_id, "is_suggestion": False}, 
+        {"_id": 0}
+    ).limit(500).to_list(500)
+    
     for recipe in recipes:
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
