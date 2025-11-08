@@ -51,11 +51,23 @@ function App() {
     setLoading(false);
   }, []);
 
-  const handleLogin = (token, name) => {
+  const handleLogin = async (token, name, hasCompletedOnboarding = false) => {
     localStorage.setItem("token", token);
     localStorage.setItem("userName", name);
     setIsAuthenticated(true);
     setUserName(name);
+    
+    // Se é primeiro login, executar onboarding
+    if (!hasCompletedOnboarding) {
+      toast.info("Preparando sua experiência...", { duration: 3000 });
+      try {
+        await axios.post(`${API}/onboarding/complete`);
+        toast.success("Seu aplicativo está pronto! Explore as receitas criadas para você.");
+      } catch (error) {
+        console.error("Erro no onboarding:", error);
+        // Não mostra erro ao usuário para não atrapalhar a experiência
+      }
+    }
   };
 
   const handleLogout = () => {
