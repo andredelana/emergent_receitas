@@ -269,15 +269,18 @@ backend:
 
   - task: "TudoGostoso web recipe search"
     implemented: true
-    working: true
+    working: false
     file: "server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "testing"
           comment: "POST /api/recipes/search-web endpoint working correctly. Returns up to 5 recipes from TudoGostoso with name, url, and image_url fields. **MOCKED** fallback implemented due to Cloudflare protection blocking real scraping. Mock data provides realistic test results for 'arroz a grega' query."
+        - working: false
+          agent: "testing"
+          comment: "CRITICAL: TudoGostoso web search failing with 500 error due to missing 'cloudscraper' dependency. ModuleNotFoundError: No module named 'cloudscraper'. Fallback mock data not being reached because import fails before exception handling."
 
   - task: "TudoGostoso recipe import"
     implemented: true
