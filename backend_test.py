@@ -136,19 +136,19 @@ class RecipeAppTester:
         return False
 
     def test_create_recipe_without_image_auto_generation(self):
-        """Test creating a recipe WITHOUT image - should auto-generate image"""
+        """Test creating a recipe WITHOUT image - should NOT auto-generate image"""
         recipe_data = {
-            "name": "Teste de Geração de Imagem",
+            "name": "Teste Sem Geração de Imagem",
             "portions": 4,
             "link": "",
-            "notes": "Receita de teste para validar geração automática de imagem",
+            "notes": "Receita de teste para validar que imagem NÃO é gerada automaticamente",
             "ingredients": [
                 {"name": "frango", "quantity": 500, "unit": "g", "mandatory": True},
                 {"name": "batata", "quantity": 3, "unit": "unidades", "mandatory": True}
             ]
         }
         
-        print(f"\n🔍 Testing Recipe Creation with Auto Image Generation...")
+        print(f"\n🔍 Testing Recipe Creation WITHOUT Auto Image Generation...")
         self.tests_run += 1
         
         try:
@@ -158,7 +158,7 @@ class RecipeAppTester:
                 'Authorization': f'Bearer {self.token}'
             }
             
-            response = requests.post(url, json=recipe_data, headers=headers, timeout=60)
+            response = requests.post(url, json=recipe_data, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -168,29 +168,22 @@ class RecipeAppTester:
                     print(f"❌ Failed - No recipe ID in response")
                     return False
                 
-                # Check if image was auto-generated
-                imagem_url = data.get('imagem_url', '')
-                if not imagem_url:
+                # Check that image was NOT auto-generated (should be empty string)
+                imagem_url = data.get('imagem_url', None)
+                if imagem_url is None:
                     print(f"❌ Failed - No imagem_url field in response")
                     return False
                 
-                # Check if image is in base64 format
-                if not imagem_url.startswith("data:image/png;base64,"):
-                    print(f"❌ Failed - Image URL doesn't start with 'data:image/png;base64,'")
-                    print(f"   Got: {imagem_url[:50]}...")
-                    return False
-                
-                # Check if base64 data exists
-                base64_part = imagem_url.replace("data:image/png;base64,", "")
-                if len(base64_part) < 100:  # Should be much longer for a real image
-                    print(f"❌ Failed - Base64 data too short: {len(base64_part)} chars")
+                # Image should be empty string (not auto-generated)
+                if imagem_url != "":
+                    print(f"❌ Failed - Image was auto-generated when it shouldn't be")
+                    print(f"   Got imagem_url: {imagem_url[:100]}...")
                     return False
                 
                 self.tests_passed += 1
-                print(f"✅ Passed - Recipe created with auto-generated image")
+                print(f"✅ Passed - Recipe created WITHOUT auto-generated image")
                 print(f"   Recipe ID: {data['id']}")
-                print(f"   Image URL length: {len(imagem_url)} chars")
-                print(f"   Base64 data length: {len(base64_part)} chars")
+                print(f"   imagem_url: '{imagem_url}' (empty as expected)")
                 
                 # Store for update test
                 self.test_recipe_id = data['id']
