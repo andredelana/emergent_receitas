@@ -633,13 +633,13 @@ async def import_recipe_from_clipboard(data: ImportRecipeRequest, user_id: str =
         chat = LlmChat(
             api_key=llm_key,
             session_id=f"import-{user_id}-{uuid.uuid4()}",
-            system_message="""Você é um assistente que extrai receitas de textos.
+            system_message="""Você é um assistente especializado que extrai receitas de textos.
             Retorne APENAS um JSON válido no seguinte formato:
             {
                 "name": "Nome da Receita",
                 "portions": 4,
                 "link": "",
-                "notes": "Observações sobre a receita",
+                "notes": "Modo de Preparo:\n1. Primeiro passo detalhado\n2. Segundo passo detalhado\n3. Terceiro passo...",
                 "ingredients": [
                     {"name": "Farinha de trigo", "quantity": 500, "unit": "g", "mandatory": true},
                     {"name": "Açúcar", "quantity": 200, "unit": "g", "mandatory": true}
@@ -648,10 +648,17 @@ async def import_recipe_from_clipboard(data: ImportRecipeRequest, user_id: str =
             
             IMPORTANTE:
             - Retorne APENAS o JSON, sem texto adicional
-            - Se não conseguir extrair alguma informação, use valores padrão
+            - No campo "notes", SEMPRE crie um modo de preparo detalhado passo a passo
+            - O modo de preparo deve começar com "Modo de Preparo:" e ter passos numerados
+            - Cada passo deve ser claro, objetivo e em uma nova linha
+            - Se o texto original já tiver modo de preparo, organize-o em passos numerados
+            - Se não tiver modo de preparo, CRIE um baseado nos ingredientes
             - portions deve ser um número inteiro
             - quantity deve ser um número (pode ser decimal)
             - mandatory deve ser boolean (true para ingredientes principais, false para opcionais)
+            
+            Exemplo de notes bem formatado:
+            "Modo de Preparo:\n1. Pré-aqueça o forno a 180°C\n2. Em uma tigela, misture a farinha com o açúcar\n3. Adicione os ovos um a um, mexendo bem\n4. Despeje a massa em uma forma untada\n5. Asse por 30-40 minutos até dourar"
             """
         ).with_model("openai", "gpt-4o")
         
