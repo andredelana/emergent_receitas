@@ -255,6 +255,115 @@ class RecipeAppTester:
             print(f"❌ Failed - Error: {str(e)}")
             return False
 
+    def test_manual_image_update(self):
+        """Test manually setting imagem_url - should work correctly"""
+        if not self.test_recipe_id:
+            print("❌ No recipe ID available for manual image test")
+            return False
+        
+        print(f"\n🔍 Testing Manual Image Update...")
+        self.tests_run += 1
+        
+        try:
+            url = f"{self.api_url}/recipes"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {self.token}'
+            }
+            
+            # Manually set an image URL
+            test_image_url = "https://example.com/test-image.jpg"
+            update_data = {"imagem_url": test_image_url}
+            
+            update_response = requests.put(f"{url}/{self.test_recipe_id}", json=update_data, headers=headers, timeout=30)
+            
+            if update_response.status_code == 200:
+                data = update_response.json()
+                
+                # Check that manual image was saved correctly
+                imagem_url = data.get('imagem_url', None)
+                if imagem_url is None:
+                    print(f"❌ Failed - No imagem_url field in response")
+                    return False
+                
+                # Image should match what we set manually
+                if imagem_url != test_image_url:
+                    print(f"❌ Failed - Manual image URL not saved correctly")
+                    print(f"   Expected: {test_image_url}")
+                    print(f"   Got: {imagem_url}")
+                    return False
+                
+                self.tests_passed += 1
+                print(f"✅ Passed - Manual image URL saved correctly")
+                print(f"   Recipe ID: {self.test_recipe_id}")
+                print(f"   imagem_url: {imagem_url}")
+                return True
+            else:
+                print(f"❌ Failed - Update status: {update_response.status_code}")
+                try:
+                    error_detail = update_response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {update_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
+    def test_generate_image_endpoint_disabled(self):
+        """Test that generate-image endpoint returns 501 error"""
+        if not self.test_recipe_id:
+            print("❌ No recipe ID available for generate-image test")
+            return False
+        
+        print(f"\n🔍 Testing Generate Image Endpoint (Should be Disabled)...")
+        self.tests_run += 1
+        
+        try:
+            url = f"{self.api_url}/recipes/{self.test_recipe_id}/generate-image"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {self.token}'
+            }
+            
+            response = requests.post(url, headers=headers, timeout=30)
+            
+            # Should return 501 status code
+            if response.status_code == 501:
+                try:
+                    data = response.json()
+                    expected_message = "Image generation disabled - please set images manually"
+                    
+                    # Check error message
+                    if 'detail' in data and expected_message in data['detail']:
+                        self.tests_passed += 1
+                        print(f"✅ Passed - Generate image endpoint properly disabled")
+                        print(f"   Status: {response.status_code}")
+                        print(f"   Message: {data['detail']}")
+                        return True
+                    else:
+                        print(f"❌ Failed - Wrong error message")
+                        print(f"   Expected: {expected_message}")
+                        print(f"   Got: {data}")
+                        return False
+                except:
+                    print(f"❌ Failed - Could not parse JSON response")
+                    print(f"   Response: {response.text}")
+                    return False
+            else:
+                print(f"❌ Failed - Expected status 501, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Response: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
     def test_ingredient_suggestions(self):
         """Test ingredient suggestions"""
         success, response = self.run_test(
