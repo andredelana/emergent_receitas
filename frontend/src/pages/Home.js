@@ -16,6 +16,7 @@ function Home({ userName, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [refreshingSuggestions, setRefreshingSuggestions] = useState(false);
   const [refreshingTrending, setRefreshingTrending] = useState(false);
+  const [viewRecipeDialog, setViewRecipeDialog] = useState(null);
 
   useEffect(() => {
     loadHomeData();
