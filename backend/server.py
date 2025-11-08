@@ -1124,21 +1124,15 @@ async def get_trending_recipes(user_id: str = Depends(get_current_user)):
     existing_trending = await db.recipes.find(
         {"user_id": user_id, "is_suggestion": True, "suggestion_type": "trending"},
         {"_id": 0}
-    ).to_list(10)
+    ).limit(5).to_list(5)
     
     # Processa datas
     for recipe in existing_trending:
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
     
-    # Se não tem tendências, gera automaticamente
-    if len(existing_trending) == 0:
-        logger.info(f"Generating trending suggestions for user {user_id}")
-        new_trending = await generate_trending_suggestions(user_id)
-        return new_trending[:5]
-    
-    # Retorna tendências existentes (máximo 5)
-    return existing_trending[:5]
+    # Retorna tendências existentes (não gera automaticamente para não travar o carregamento)
+    return existing_trending
 
 @api_router.post("/home/trending/refresh", response_model=List[Recipe])
 async def refresh_trending_recipes(user_id: str = Depends(get_current_user)):
