@@ -157,7 +157,10 @@ function RecipeForm({ userName, onLogout }) {
       const response = await axios.get(`${API}/recipes`);
       const recipe = response.data.find((r) => r.id === id);
       if (recipe) {
-        setFormData(recipe);
+        setFormData({
+          ...recipe,
+          restricoes: Array.isArray(recipe.restricoes) ? recipe.restricoes : []
+        });
       } else {
         toast.error("Receita não encontrada");
         navigate("/receitas");
