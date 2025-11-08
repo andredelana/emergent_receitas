@@ -230,59 +230,57 @@ function Home({ userName, onLogout }) {
           </p>
 
           {/* Infográfico */}
-          <div className="bg-white/60 backdrop-blur rounded-2xl p-8 max-w-4xl mx-auto shadow-lg">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-800">Como funciona</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-3">
-                  <BookOpen className="w-8 h-8 text-orange-600" />
+          <div className="bg-white/60 backdrop-blur rounded-2xl p-8 max-w-5xl mx-auto shadow-lg">
+            <div className="grid grid-cols-2 md:grid-cols-7 gap-4 md:gap-2 items-center">
+              {/* Passo 1 */}
+              <div className="flex flex-col items-center col-span-2 md:col-span-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center mb-3 shadow-lg">
+                  <BookOpen className="w-10 h-10 text-white" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700">Cadastrar Receitas</p>
-                <p className="text-xs text-gray-500 mt-1 text-center">
-                  Adicione suas receitas favoritas
-                </p>
+                <p className="text-sm font-bold text-gray-800 text-center">Cadastrar</p>
+                <p className="text-xs text-gray-500 text-center">Receitas</p>
               </div>
 
+              {/* Seta 1 */}
               <div className="hidden md:flex items-center justify-center">
-                <ArrowRight className="w-8 h-8 text-gray-400" />
+                <ArrowRight className="w-8 h-8 text-orange-400" />
               </div>
 
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-3">
-                  <ChefHat className="w-8 h-8 text-amber-600" />
+              {/* Passo 2 */}
+              <div className="flex flex-col items-center col-span-2 md:col-span-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center mb-3 shadow-lg">
+                  <ChefHat className="w-10 h-10 text-white" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700">Selecionar Porções</p>
-                <p className="text-xs text-gray-500 mt-1 text-center">
-                  Escolha quantas pessoas vão comer
-                </p>
+                <p className="text-sm font-bold text-gray-800 text-center">Selecionar</p>
+                <p className="text-xs text-gray-500 text-center">Porções</p>
               </div>
 
+              {/* Seta 2 */}
               <div className="hidden md:flex items-center justify-center">
-                <ArrowRight className="w-8 h-8 text-gray-400" />
+                <ArrowRight className="w-8 h-8 text-amber-400" />
               </div>
 
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-3">
-                  <ListChecks className="w-8 h-8 text-green-600" />
+              {/* Passo 3 */}
+              <div className="flex flex-col items-center col-span-2 md:col-span-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center mb-3 shadow-lg">
+                  <ListChecks className="w-10 h-10 text-white" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700">Gerar Lista</p>
-                <p className="text-xs text-gray-500 mt-1 text-center">
-                  Lista agregada automaticamente
-                </p>
+                <p className="text-sm font-bold text-gray-800 text-center">Gerar</p>
+                <p className="text-xs text-gray-500 text-center">Lista</p>
               </div>
 
+              {/* Seta 3 */}
               <div className="hidden md:flex items-center justify-center">
-                <ArrowRight className="w-8 h-8 text-gray-400" />
+                <ArrowRight className="w-8 h-8 text-green-400" />
               </div>
 
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
-                  <ShoppingCart className="w-8 h-8 text-blue-600" />
+              {/* Passo 4 */}
+              <div className="flex flex-col items-center col-span-2 md:col-span-1">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center mb-3 shadow-lg">
+                  <ShoppingCart className="w-10 h-10 text-white" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700">Comprar</p>
-                <p className="text-xs text-gray-500 mt-1 text-center">
-                  Vá ao mercado com sua lista
-                </p>
+                <p className="text-sm font-bold text-gray-800 text-center">Comprar</p>
+                <p className="text-xs text-gray-500 text-center">No mercado</p>
               </div>
             </div>
           </div>
