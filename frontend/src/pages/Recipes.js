@@ -502,7 +502,7 @@ function Recipes({ userName, onLogout }) {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="flex gap-2">
+                <CardFooter className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                   <Button
                     data-testid={`add-to-list-${recipe.id}`}
                     variant="outline"
