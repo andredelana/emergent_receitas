@@ -71,6 +71,7 @@ class Recipe(BaseModel):
     restricoes: List[str] = []  # vegetariano, vegano, sem gluten, sem lactose, etc
     imagem_url: Optional[str] = ""  # URL ou base64 da imagem
     is_suggestion: bool = False  # True se é uma receita sugerida pelo sistema
+    suggestion_type: Optional[str] = ""  # "ingredients" ou "trending"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RecipeCreate(BaseModel):
