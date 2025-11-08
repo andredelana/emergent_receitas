@@ -2,7 +2,7 @@ import requests
 import json
 
 # Test with different query
-base_url = "https://menusabor.preview.emergentagent.com"
+base_url = "https://image-free-recipes.preview.emergentagent.com"
 api_url = f"{base_url}/api"
 
 # Login first

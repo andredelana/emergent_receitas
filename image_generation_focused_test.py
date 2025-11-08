@@ -11,7 +11,7 @@ import sys
 def test_image_generation_flow():
     """Test the complete image generation flow as specified in review request"""
     
-    base_url = "https://menusabor.preview.emergentagent.com"
+    base_url = "https://image-free-recipes.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🧪 FOCUSED IMAGE GENERATION TEST")
