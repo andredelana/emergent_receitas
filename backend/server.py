@@ -1132,33 +1132,120 @@ Exemplo de formato:
 
 @api_router.get("/home/trending", response_model=List[Recipe])
 async def get_trending_recipes(user_id: str = Depends(get_current_user)):
-    """Retorna receitas em tendência (mais adicionadas globalmente)"""
-    # Busca todas as listas de todos os usuários
-    all_lists = await db.shopping_lists.find({}, {"_id": 0, "items": 1}).to_list(10000)
+    """Retorna receitas em tendência geradas com LLM"""
     
-    # Conta quantas vezes cada receita foi adicionada globalmente
-    global_recipe_count = {}
-    for lst in all_lists:
-        for item in lst.get('items', []):
-            for recipe_id in item.get('recipe_ids', []):
-                global_recipe_count[recipe_id] = global_recipe_count.get(recipe_id, 0) + 1
+    # Busca sugestões de tendências existentes
+    existing_trending = await db.recipes.find(
+        {"user_id": user_id, "is_suggestion": True, "suggestion_type": "trending"},
+        {"_id": 0}
+    ).to_list(10)
     
-    # Ordena por contagem e pega top 6
-    top_recipe_ids = sorted(global_recipe_count.items(), key=lambda x: x[1], reverse=True)[:6]
-    top_ids = [rid for rid, _ in top_recipe_ids]
-    
-    if not top_ids:
-        # Se não houver dados, retorna receitas aleatórias
-        recipes = await db.recipes.find({}, {"_id": 0}).to_list(6)
-    else:
-        # Busca as receitas (de qualquer usuário)
-        recipes = await db.recipes.find({"id": {"$in": top_ids}}, {"_id": 0}).to_list(6)
-    
-    for recipe in recipes:
+    # Processa datas
+    for recipe in existing_trending:
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
     
-    return recipes
+    # Se não tem tendências, gera automaticamente
+    if len(existing_trending) == 0:
+        logger.info(f"Generating trending suggestions for user {user_id}")
+        new_trending = await generate_trending_suggestions(user_id)
+        return new_trending[:5]
+    
+    # Retorna tendências existentes (máximo 5)
+    return existing_trending[:5]
+
+@api_router.post("/home/trending/refresh", response_model=List[Recipe])
+async def refresh_trending_recipes(user_id: str = Depends(get_current_user)):
+    """Gera novas receitas em tendência"""
+    
+    # Remove tendências antigas
+    await db.recipes.delete_many({"user_id": user_id, "is_suggestion": True, "suggestion_type": "trending"})
+    
+    # Gera novas tendências
+    new_trending = await generate_trending_suggestions(user_id)
+    return new_trending[:5]
+
+async def generate_trending_suggestions(user_id: str):
+    """Gera receitas em tendência usando LLM com busca web"""
+    try:
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return []
+        
+        # Gera prompt para LLM com contexto de tendências
+        current_month = datetime.now().strftime("%B %Y")
+        
+        prompt = f"""Você é um chef especializado em tendências culinárias. Considerando {current_month}, 
+        sugira 5 receitas que estão em alta no mundo culinário brasileiro e internacional atualmente.
+        
+Pense em: ingredientes da estação, técnicas populares nas redes sociais, receitas virais, 
+cozinhas emergentes, e adaptações de pratos internacionais ao paladar brasileiro.
+
+Retorne APENAS um array JSON válido, sem texto adicional. Cada receita deve ter:
+- name: nome atrativo e atual da receita
+- portions: número de porções (entre 2 e 6)
+- ingredients: array com pelo menos 4 ingredientes. Cada ingrediente deve ter:
+  * name: nome do ingrediente
+  * quantity: quantidade numérica
+  * unit: unidade de medida (g, kg, ml, l, xícara, colher, unidade)
+  * mandatory: true para ingredientes principais, false para opcionais
+- notes: modo de preparo resumido (2-3 frases)
+- tempo_preparo: tempo em minutos
+- calorias_por_porcao: estimativa de calorias
+- custo_estimado: custo estimado em reais
+- restricoes: array de restrições alimentares (ex: ["vegetariano"], ["vegano"], [] se não houver)
+
+Exemplo de formato:
+[{{"name": "Bowl de Açaí Fitness", "portions": 2, "ingredients": [{{"name": "açaí", "quantity": 200, "unit": "g", "mandatory": true}}], "notes": "Bata o açaí...", "tempo_preparo": 10, "calorias_por_porcao": 280, "custo_estimado": 18.00, "restricoes": ["vegano"]}}]"""
+        
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"trending-suggestions-{user_id}-{uuid.uuid4()}",
+            system_message="Você é um chef especialista em tendências culinárias. Retorne APENAS JSON válido."
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Parse JSON
+        import json
+        import re
+        json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
+        if not json_match:
+            return []
+        
+        recipes_data = json.loads(json_match.group(0))
+        
+        # Cria receitas no banco
+        new_recipes = []
+        for recipe_data in recipes_data[:5]:
+            recipe_dict = {
+                'id': str(uuid.uuid4()),
+                'user_id': user_id,
+                'name': recipe_data['name'],
+                'portions': recipe_data.get('portions', 4),
+                'ingredients': recipe_data.get('ingredients', []),
+                'notes': recipe_data.get('notes', ''),
+                'imagem_url': '',
+                'tempo_preparo': recipe_data.get('tempo_preparo', 0),
+                'calorias_por_porcao': recipe_data.get('calorias_por_porcao', 0),
+                'custo_estimado': recipe_data.get('custo_estimado', 0),
+                'restricoes': recipe_data.get('restricoes', []),
+                'created_at': datetime.now(timezone.utc),
+                'is_suggestion': True,
+                'suggestion_type': 'trending'
+            }
+            
+            recipe = Recipe(**recipe_dict)
+            recipe_doc = recipe.model_dump()
+            recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
+            await db.recipes.insert_one(recipe_doc)
+            new_recipes.append(recipe)
+        
+        return new_recipes
+    
+    except Exception as e:
+        logger.error(f"Erro ao gerar sugestões de tendências: {str(e)}")
+        return []
 
 @api_router.post("/recipes/{recipe_id}/copy")
 async def copy_recipe_to_my_recipes(recipe_id: str, user_id: str = Depends(get_current_user)):
