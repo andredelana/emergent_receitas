@@ -170,11 +170,17 @@ function ShoppingListDetail({ userName, onLogout }) {
   const clearBoughtItems = async () => {
     if (window.confirm("Tem certeza que deseja remover todos os itens comprados?")) {
       try {
+        // Atualiza o estado imediatamente para feedback visual rápido
+        const remainingItems = list.items.filter(item => !item.bought);
+        setList({ ...list, items: remainingItems });
+        
+        // Chama o endpoint do backend
         await axios.post(`${API}/shopping-lists/${id}/clear-bought`);
         toast.success("Itens comprados removidos");
-        loadList();
       } catch (error) {
         toast.error("Erro ao limpar itens");
+        // Recarrega a lista em caso de erro
+        loadList();
       }
     }
   };
