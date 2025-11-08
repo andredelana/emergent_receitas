@@ -30,11 +30,15 @@ function Login({ onLogin }) {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!registerData.username || !registerData.password || !registerData.name) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await axios.post(`${API}/auth/register`, registerData);
-      toast.success(`Conta criada! Bem-vindo, ${response.data.name}!`);
-      onLogin(response.data.token, response.data.name);
+      toast.success(`Conta criada com sucesso! Bem-vindo, ${response.data.name}!`);
+      onLogin(response.data.token, response.data.name, response.data.has_completed_onboarding);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erro ao criar conta");
     } finally {
