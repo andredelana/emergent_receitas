@@ -202,14 +202,19 @@ function RecipeForm({ userName, onLogout }) {
       
       const importedData = response.data;
       
-      // Substitui todos os campos do formulário
+      // Substitui todos os campos do formulário com validações
       setFormData({
         ...formData,
         name: importedData.name || formData.name,
         portions: importedData.portions || formData.portions,
         link: importedData.link || url,
         notes: importedData.notes || formData.notes,
-        ingredients: importedData.ingredients || formData.ingredients
+        ingredients: Array.isArray(importedData.ingredients) ? importedData.ingredients : formData.ingredients,
+        tempo_preparo: importedData.tempo_preparo || 0,
+        calorias_por_porcao: importedData.calorias_por_porcao || 0,
+        custo_estimado: importedData.custo_estimado || 0,
+        restricoes: Array.isArray(importedData.restricoes) ? importedData.restricoes : [],
+        imagem_url: importedData.imagem_url || ""
       });
       
       setShowWebRecipes(false);
