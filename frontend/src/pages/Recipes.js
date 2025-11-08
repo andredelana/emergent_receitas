@@ -32,6 +32,7 @@ function Recipes({ userName, onLogout }) {
   const [addToListDialog, setAddToListDialog] = useState(null);
   const [portions, setPortions] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewRecipeDialog, setViewRecipeDialog] = useState(null);
 
   // Estados de filtros
   const [filters, setFilters] = useState({
