@@ -347,9 +347,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Recipe CRUD operations (verify creation/update without AI images)"
-    - "LLM recipe import (verify no image generation)"
-  stuck_tasks: []
+    - "TudoGostoso web recipe search (fix cloudscraper dependency)"
+    - "TudoGostoso recipe import (fix cloudscraper dependency)"
+  stuck_tasks: 
+    - "TudoGostoso web recipe search"
+    - "TudoGostoso recipe import"
   test_all: false
   test_priority: "high_first"
 
