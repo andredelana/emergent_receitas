@@ -994,34 +994,19 @@ async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
 async def get_suggested_recipes(user_id: str = Depends(get_current_user)):
     """Retorna sugestões de receitas geradas com LLM usando ingredientes do usuário"""
     
-    # Busca receitas não-sugeridas do usuário
-    user_recipes = await db.recipes.find(
-        {"user_id": user_id, "is_suggestion": False}, 
-        {"_id": 0}
-    ).to_list(1000)
-    
-    if len(user_recipes) < 2:
-        return []
-    
     # Busca sugestões existentes
     existing_suggestions = await db.recipes.find(
         {"user_id": user_id, "is_suggestion": True, "suggestion_type": "ingredients"},
         {"_id": 0}
-    ).to_list(10)
+    ).limit(5).to_list(5)
     
     # Processa datas
     for recipe in existing_suggestions:
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
     
-    # Se não tem sugestões, gera automaticamente
-    if len(existing_suggestions) == 0:
-        logger.info(f"Generating ingredient-based suggestions for user {user_id}")
-        new_suggestions = await generate_ingredient_suggestions(user_id)
-        return new_suggestions[:5]
-    
-    # Retorna sugestões existentes (máximo 5)
-    return existing_suggestions[:5]
+    # Retorna sugestões existentes (não gera automaticamente para não travar o carregamento)
+    return existing_suggestions
 
 @api_router.post("/home/suggestions/refresh", response_model=List[Recipe])
 async def refresh_suggested_recipes(user_id: str = Depends(get_current_user)):
