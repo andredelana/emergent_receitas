@@ -49,6 +49,7 @@ class TokenResponse(BaseModel):
     token: str
     name: str
     username: str
+    has_completed_onboarding: bool = False
 
 class Ingredient(BaseModel):
     name: str
