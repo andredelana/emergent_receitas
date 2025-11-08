@@ -410,7 +410,12 @@ function RecipeForm({ userName, onLogout }) {
         portions: importedRecipe.portions,
         link: importedRecipe.link || "",
         notes: importedRecipe.notes || "",
-        ingredients: importedRecipe.ingredients
+        ingredients: importedRecipe.ingredients || [],
+        tempo_preparo: importedRecipe.tempo_preparo || 0,
+        calorias_por_porcao: importedRecipe.calorias_por_porcao || 0,
+        custo_estimado: importedRecipe.custo_estimado || 0,
+        restricoes: importedRecipe.restricoes || [],
+        imagem_url: importedRecipe.imagem_url || ""
       });
       setShowImportDialog(false);
       setImportedRecipe(null);
