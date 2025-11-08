@@ -316,58 +316,72 @@ function Home({ userName, onLogout }) {
             )}
 
             {/* Com Seus Ingredientes */}
-            {suggestions.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                        Com Seus Ingredientes
-                      </h2>
-                      <p className="text-gray-600 text-sm">Receitas criadas com ingredientes que você já usa</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={refreshSuggestions}
-                      disabled={refreshingSuggestions}
-                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                      title="Gerar novas sugestões"
-                    >
-                      <RefreshCw className={`h-5 w-5 ${refreshingSuggestions ? 'animate-spin' : ''}`} />
-                    </Button>
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+                      Com Seus Ingredientes
+                    </h2>
+                    <p className="text-gray-600 text-sm">Receitas criadas com ingredientes que você já usa</p>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={refreshSuggestions}
+                    disabled={refreshingSuggestions}
+                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    title="Gerar novas sugestões"
+                  >
+                    <RefreshCw className={`h-5 w-5 ${refreshingSuggestions ? 'animate-spin' : ''}`} />
+                  </Button>
                 </div>
+              </div>
+              {suggestions.length > 0 ? (
                 <RecipeCarousel recipes={suggestions} showActions={true} />
-              </section>
-            )}
+              ) : (
+                <div className="bg-white/60 backdrop-blur rounded-xl p-8 text-center">
+                  <ChefHat className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-600 mb-4">
+                    Clique no botão <RefreshCw className="inline w-4 h-4" /> para gerar receitas personalizadas
+                  </p>
+                </div>
+              )}
+            </section>
 
             {/* Tendências */}
-            {trending.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                        Tendências
-                      </h2>
-                      <p className="text-gray-600 text-sm">Receitas em alta no mundo culinário</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={refreshTrending}
-                      disabled={refreshingTrending}
-                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                      title="Gerar novas tendências"
-                    >
-                      <RefreshCw className={`h-5 w-5 ${refreshingTrending ? 'animate-spin' : ''}`} />
-                    </Button>
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+                      Tendências
+                    </h2>
+                    <p className="text-gray-600 text-sm">Receitas em alta no mundo culinário</p>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={refreshTrending}
+                    disabled={refreshingTrending}
+                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    title="Gerar novas tendências"
+                  >
+                    <RefreshCw className={`h-5 w-5 ${refreshingTrending ? 'animate-spin' : ''}`} />
+                  </Button>
                 </div>
+              </div>
+              {trending.length > 0 ? (
                 <RecipeCarousel recipes={trending} showActions={true} />
-              </section>
-            )}
+              ) : (
+                <div className="bg-white/60 backdrop-blur rounded-xl p-8 text-center">
+                  <ChefHat className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-600 mb-4">
+                    Clique no botão <RefreshCw className="inline w-4 h-4" /> para descobrir tendências culinárias
+                  </p>
+                </div>
+              )}
+            </section>
 
             {/* Placeholder se não houver dados */}
             {favorites.length === 0 && suggestions.length === 0 && trending.length === 0 && (
