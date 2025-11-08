@@ -588,22 +588,8 @@ async def update_recipe(recipe_id: str, recipe_data: RecipeUpdate, user_id: str 
 
 @api_router.post("/recipes/{recipe_id}/generate-image")
 async def generate_image_for_recipe(recipe_id: str, user_id: str = Depends(get_current_user)):
-    """Gera ou regenera imagem para uma receita"""
-    recipe = await db.recipes.find_one({"id": recipe_id, "user_id": user_id}, {"_id": 0})
-    if not recipe:
-        raise HTTPException(status_code=404, detail="Receita não encontrada")
-    
-    # Gera nova imagem
-    new_image = await generate_recipe_image(recipe)
-    
-    if new_image:
-        await db.recipes.update_one(
-            {"id": recipe_id},
-            {"$set": {"imagem_url": new_image}}
-        )
-        return {"message": "Imagem gerada com sucesso", "imagem_url": new_image}
-    else:
-        raise HTTPException(status_code=500, detail="Erro ao gerar imagem")
+    """Image generation disabled - images now only set manually"""
+    raise HTTPException(status_code=501, detail="Image generation disabled - please set images manually")
 
 @api_router.delete("/recipes/{recipe_id}")
 async def delete_recipe(recipe_id: str, user_id: str = Depends(get_current_user)):
