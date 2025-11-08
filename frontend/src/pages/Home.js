@@ -300,7 +300,7 @@ function Home({ userName, onLogout }) {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      Suas Favoritas
+                      Favoritas
                     </h2>
                     <p className="text-gray-600 text-sm">Receitas que você mais adiciona às listas</p>
                   </div>
@@ -317,15 +317,27 @@ function Home({ userName, onLogout }) {
               </section>
             )}
 
-            {/* Sugestões */}
+            {/* Com Seus Ingredientes */}
             {suggestions.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      Com Seus Ingredientes Favoritos
-                    </h2>
-                    <p className="text-gray-600 text-sm">Receitas criadas especialmente para você com IA • Atualizado diariamente</p>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+                        Com Seus Ingredientes
+                      </h2>
+                      <p className="text-gray-600 text-sm">Receitas criadas com ingredientes que você já usa</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={refreshSuggestions}
+                      disabled={refreshingSuggestions}
+                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                      title="Gerar novas sugestões"
+                    >
+                      <RefreshCw className={`h-5 w-5 ${refreshingSuggestions ? 'animate-spin' : ''}`} />
+                    </Button>
                   </div>
                 </div>
                 <RecipeCarousel recipes={suggestions} showActions={true} />
@@ -336,11 +348,23 @@ function Home({ userName, onLogout }) {
             {trending.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      Em Tendência
-                    </h2>
-                    <p className="text-gray-600 text-sm">Receitas populares entre todos os usuários</p>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+                        Tendências
+                      </h2>
+                      <p className="text-gray-600 text-sm">Receitas em alta no mundo culinário</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={refreshTrending}
+                      disabled={refreshingTrending}
+                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                      title="Gerar novas tendências"
+                    >
+                      <RefreshCw className={`h-5 w-5 ${refreshingTrending ? 'animate-spin' : ''}`} />
+                    </Button>
                   </div>
                 </div>
                 <RecipeCarousel recipes={trending} showActions={true} />
