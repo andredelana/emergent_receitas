@@ -14,6 +14,8 @@ function Home({ userName, onLogout }) {
   const [suggestions, setSuggestions] = useState([]);
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshingSuggestions, setRefreshingSuggestions] = useState(false);
+  const [refreshingTrending, setRefreshingTrending] = useState(false);
 
   useEffect(() => {
     loadHomeData();
@@ -34,6 +36,32 @@ function Home({ userName, onLogout }) {
       console.error("Erro ao carregar dados da página inicial", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshSuggestions = async () => {
+    setRefreshingSuggestions(true);
+    try {
+      const response = await axios.post(`${API}/home/suggestions/refresh`);
+      setSuggestions(response.data);
+      toast.success("Novas sugestões geradas!");
+    } catch (error) {
+      toast.error("Erro ao gerar novas sugestões");
+    } finally {
+      setRefreshingSuggestions(false);
+    }
+  };
+
+  const refreshTrending = async () => {
+    setRefreshingTrending(true);
+    try {
+      const response = await axios.post(`${API}/home/trending/refresh`);
+      setTrending(response.data);
+      toast.success("Novas tendências geradas!");
+    } catch (error) {
+      toast.error("Erro ao gerar novas tendências");
+    } finally {
+      setRefreshingTrending(false);
     }
   };
 
