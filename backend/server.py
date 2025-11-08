@@ -1266,7 +1266,7 @@ Exemplo de formato:
         
         recipes_data = json.loads(json_match.group(0))
         
-        # Cria receitas no banco
+        # Cria receitas no banco com estimativas do LLM
         new_recipes = []
         for recipe_data in recipes_data[:5]:
             recipe_dict = {
@@ -1285,6 +1285,9 @@ Exemplo de formato:
                 'is_suggestion': True,
                 'suggestion_type': 'trending'
             }
+            
+            # Estima valores com LLM se estiverem vazios ou zero
+            recipe_dict = await estimate_recipe_values(recipe_dict)
             
             recipe = Recipe(**recipe_dict)
             recipe_doc = recipe.model_dump()
