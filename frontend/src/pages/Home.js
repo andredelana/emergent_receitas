@@ -152,7 +152,7 @@ function Home({ userName, onLogout }) {
     );
   };
 
-  const RecipeCard = ({ recipe, showActions = false }) => (
+  const RecipeCard = ({ recipe, showActions = false, actionsType = 'full' }) => (
     <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden h-full flex flex-col">
       {recipe.imagem_url && (
         <div className="relative h-40 w-full overflow-hidden">
@@ -201,15 +201,17 @@ function Home({ userName, onLogout }) {
         
         {showActions && (
           <div className="flex flex-col gap-2 pt-2 border-t">
-            <Button
-              onClick={() => handleCopyRecipe(recipe.id)}
-              variant="outline"
-              className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
-              size="sm"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar às minhas receitas
-            </Button>
+            {actionsType === 'full' && (
+              <Button
+                onClick={() => handleCopyRecipe(recipe.id)}
+                variant="outline"
+                className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
+                size="sm"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar às minhas receitas
+              </Button>
+            )}
             <Button
               onClick={() => handleAddToQuickList(recipe)}
               variant="outline"
