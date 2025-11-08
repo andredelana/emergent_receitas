@@ -293,15 +293,15 @@ function Home({ userName, onLogout }) {
         ) : (
           <div className="space-y-12">
             {/* Favoritas */}
-            {favorites.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      Favoritas
-                    </h2>
-                    <p className="text-gray-600 text-sm">Receitas que você mais adiciona às listas</p>
-                  </div>
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Favoritas
+                  </h2>
+                  <p className="text-gray-600 text-sm">Receitas que você mais adiciona às listas</p>
+                </div>
+                {favorites.length > 0 && (
                   <Button
                     variant="ghost"
                     onClick={() => navigate("/receitas")}
@@ -310,10 +310,26 @@ function Home({ userName, onLogout }) {
                     Ver todas
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                </div>
+                )}
+              </div>
+              {favorites.length > 0 ? (
                 <RecipeCarousel recipes={favorites} showActions={false} />
-              </section>
-            )}
+              ) : (
+                <div className="bg-white/60 backdrop-blur rounded-xl p-8 text-center">
+                  <ChefHat className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-600 mb-4">
+                    Suas receitas favoritas aparecerão aqui quando você começar a adicioná-las às listas de compras
+                  </p>
+                  <Button
+                    onClick={() => navigate("/receitas")}
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Ver Minhas Receitas
+                  </Button>
+                </div>
+              )}
+            </section>
 
             {/* Com Seus Ingredientes */}
             <section>
