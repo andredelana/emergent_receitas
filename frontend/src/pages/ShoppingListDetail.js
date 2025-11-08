@@ -146,11 +146,17 @@ function ShoppingListDetail({ userName, onLogout }) {
 
   const deleteItem = async (itemId) => {
     try {
+      // Atualiza o estado local imediatamente
+      const updatedItems = list.items.filter(item => item.id !== itemId);
+      setList({ ...list, items: updatedItems });
+      
+      // Deleta no servidor
       await axios.delete(`${API}/shopping-lists/${id}/items/${itemId}`);
       toast.success("Item removido");
-      loadList();
     } catch (error) {
       toast.error("Erro ao remover item");
+      // Reverte em caso de erro
+      loadList();
     }
   };
 
