@@ -258,11 +258,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "testing"
           comment: "LLM-powered recipe import from clipboard text working correctly. Recipe extracted and created successfully with proper ingredient parsing. Now creates recipes without images."
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED: LLM recipe import creates recipes with empty imagem_url field (no AI image generation). Recipe 'Pão de Açúcar Caseiro' imported successfully with 6 ingredients and empty imagem_url as expected."
 
   - task: "TudoGostoso web recipe search"
     implemented: true
