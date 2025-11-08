@@ -20,7 +20,7 @@ function Login({ onLogin }) {
     try {
       const response = await axios.post(`${API}/auth/login`, loginData);
       toast.success(`Bem-vindo, ${response.data.name}!`);
-      onLogin(response.data.token, response.data.name);
+      onLogin(response.data.token, response.data.name, response.data.has_completed_onboarding);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Erro ao fazer login");
     } finally {
