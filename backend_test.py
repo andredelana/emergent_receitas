@@ -378,7 +378,7 @@ class RecipeAppTester:
         return False
 
     def test_recipe_import_llm(self):
-        """Test LLM-powered recipe import"""
+        """Test LLM-powered recipe import - should NOT generate images"""
         clipboard_text = """
         Receita de Pão de Açúcar Caseiro
         
@@ -398,19 +398,57 @@ class RecipeAppTester:
         Rende 6 porções.
         """
         
-        success, response = self.run_test(
-            "LLM Recipe Import",
-            "POST",
-            "recipes/import-from-clipboard",
-            200,
-            data={"clipboard_text": clipboard_text}
-        )
-        if success and 'id' in response:
-            print(f"   Recipe imported via LLM with ID: {response['id']}")
-            print(f"   Recipe name: {response.get('name', 'Unknown')}")
-            print(f"   Ingredients count: {len(response.get('ingredients', []))}")
-            return True
-        return False
+        print(f"\n🔍 Testing LLM Recipe Import WITHOUT Image Generation...")
+        self.tests_run += 1
+        
+        try:
+            url = f"{self.api_url}/recipes/import-from-clipboard"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {self.token}'
+            }
+            
+            response = requests.post(url, json={"clipboard_text": clipboard_text}, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if recipe was created
+                if 'id' not in data:
+                    print(f"❌ Failed - No recipe ID in response")
+                    return False
+                
+                # Check that image was NOT auto-generated
+                imagem_url = data.get('imagem_url', None)
+                if imagem_url is None:
+                    print(f"❌ Failed - No imagem_url field in response")
+                    return False
+                
+                # Image should be empty (not auto-generated)
+                if imagem_url != "":
+                    print(f"❌ Failed - Image was auto-generated during LLM import when it shouldn't be")
+                    print(f"   Got imagem_url: {imagem_url[:100]}...")
+                    return False
+                
+                self.tests_passed += 1
+                print(f"✅ Passed - Recipe imported via LLM WITHOUT auto-generated image")
+                print(f"   Recipe ID: {data['id']}")
+                print(f"   Recipe name: {data.get('name', 'Unknown')}")
+                print(f"   Ingredients count: {len(data.get('ingredients', []))}")
+                print(f"   imagem_url: '{imagem_url}' (empty as expected)")
+                return True
+            else:
+                print(f"❌ Failed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_update_recipe(self):
         """Test updating a recipe"""
