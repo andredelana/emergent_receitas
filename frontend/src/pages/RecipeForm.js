@@ -684,12 +684,13 @@ function RecipeForm({ userName, onLogout }) {
                     <div key={restricao} className="flex items-center space-x-2">
                       <Checkbox
                         id={`restricao-${restricao}`}
-                        checked={formData.restricoes.includes(restricao)}
+                        checked={Array.isArray(formData.restricoes) && formData.restricoes.includes(restricao)}
                         onCheckedChange={(checked) => {
+                          const currentRestricoes = Array.isArray(formData.restricoes) ? formData.restricoes : [];
                           if (checked) {
-                            setFormData({ ...formData, restricoes: [...formData.restricoes, restricao] });
+                            setFormData({ ...formData, restricoes: [...currentRestricoes, restricao] });
                           } else {
-                            setFormData({ ...formData, restricoes: formData.restricoes.filter(r => r !== restricao) });
+                            setFormData({ ...formData, restricoes: currentRestricoes.filter(r => r !== restricao) });
                           }
                         }}
                       />
