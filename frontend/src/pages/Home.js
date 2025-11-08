@@ -160,7 +160,10 @@ function Home({ userName, onLogout }) {
   const RecipeCard = ({ recipe, showActions = false, actionsType = 'full' }) => (
     <Card 
       className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden h-full flex flex-col cursor-pointer"
-      onClick={() => setViewRecipeDialog(recipe)}
+      onClick={(e) => {
+        console.log('Card clicado:', recipe.name);
+        setViewRecipeDialog(recipe);
+      }}
     >
       {recipe.imagem_url && (
         <div className="relative h-40 w-full overflow-hidden">
