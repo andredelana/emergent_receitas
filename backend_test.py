@@ -814,10 +814,12 @@ def main():
     tester.test_get_recipes()
     tester.test_create_recipe()
     
-    # Image generation tests (main focus)
-    print("\n📋 IMAGE GENERATION TESTS")
+    # AI Image generation removal tests (main focus)
+    print("\n📋 AI IMAGE GENERATION REMOVAL TESTS")
     tester.test_create_recipe_without_image_auto_generation()
     tester.test_update_recipe_without_image_auto_generation()
+    tester.test_manual_image_update()
+    tester.test_generate_image_endpoint_disabled()
     
     # Other recipe tests
     tester.test_ingredient_suggestions()
