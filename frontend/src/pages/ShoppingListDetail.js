@@ -182,15 +182,22 @@ function ShoppingListDetail({ userName, onLogout }) {
   const clearAllItems = async () => {
     if (window.confirm("Tem certeza que deseja remover TODOS os itens da lista? Esta ação não pode ser desfeita.")) {
       try {
-        // Remove todos os itens um por um
+        // Atualiza o estado imediatamente para feedback visual rápido
+        setList({ ...list, items: [] });
+        
+        // Remove todos os itens em paralelo (muito mais rápido)
         const itemsToDelete = [...list.items];
-        for (const item of itemsToDelete) {
-          await axios.delete(`${API}/shopping-lists/${id}/items/${item.id}`);
-        }
+        await Promise.all(
+          itemsToDelete.map(item => 
+            axios.delete(`${API}/shopping-lists/${id}/items/${item.id}`)
+          )
+        );
+        
         toast.success("Lista limpa com sucesso");
-        loadList();
       } catch (error) {
         toast.error("Erro ao limpar lista");
+        // Recarrega a lista em caso de erro
+        loadList();
       }
     }
   };
