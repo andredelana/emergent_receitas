@@ -965,8 +965,11 @@ Regras:
 @api_router.get("/home/favorites", response_model=List[Recipe])
 async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
     """Retorna receitas favoritas (mais adicionadas às listas pelo usuário)"""
-    # Busca todas as listas do usuário
-    lists = await db.shopping_lists.find({"user_id": user_id}, {"_id": 0, "items": 1}).to_list(1000)
+    # Busca listas do usuário (limitado a 100 listas mais recentes)
+    lists = await db.shopping_lists.find(
+        {"user_id": user_id}, 
+        {"_id": 0, "items": 1}
+    ).limit(100).to_list(100)
     
     # Conta quantas vezes cada receita foi adicionada
     recipe_count = {}
@@ -982,8 +985,12 @@ async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
     if not top_ids:
         return []
     
-    # Busca as receitas
-    recipes = await db.recipes.find({"id": {"$in": top_ids}, "user_id": user_id}, {"_id": 0}).to_list(10)
+    # Busca as receitas (apenas campos necessários para cards)
+    recipes = await db.recipes.find(
+        {"id": {"$in": top_ids}, "user_id": user_id}, 
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    
     for recipe in recipes:
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
