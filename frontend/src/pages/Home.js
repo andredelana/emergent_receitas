@@ -154,7 +154,10 @@ function Home({ userName, onLogout }) {
   };
 
   const RecipeCard = ({ recipe, showActions = false, actionsType = 'full' }) => (
-    <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden h-full flex flex-col">
+    <Card 
+      className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden h-full flex flex-col cursor-pointer"
+      onClick={() => setViewRecipeDialog(recipe)}
+    >
       {recipe.imagem_url && (
         <div className="relative h-40 w-full overflow-hidden">
           <img
@@ -201,7 +204,10 @@ function Home({ userName, onLogout }) {
         </div>
         
         {showActions && (
-          <div className="flex flex-col gap-2 pt-2 border-t">
+          <div 
+            className="flex flex-col gap-2 pt-2 border-t"
+            onClick={(e) => e.stopPropagation()} // Impede que o clique nos botões abra o modal
+          >
             {actionsType === 'full' && (
               <Button
                 onClick={() => handleCopyRecipe(recipe.id)}
