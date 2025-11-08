@@ -377,7 +377,12 @@ async def register(user_data: UserRegister):
     await db.shopping_lists.insert_one(list_doc)
     
     token = create_token(user_id, user_data.username)
-    return TokenResponse(token=token, name=user_data.name, username=user_data.username)
+    return TokenResponse(
+        token=token, 
+        name=user_data.name, 
+        username=user_data.username,
+        has_completed_onboarding=False
+    )
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
