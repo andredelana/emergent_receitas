@@ -935,8 +935,8 @@ Regras:
             # Estima valores
             recipe_data = await estimate_recipe_values(recipe_data)
             
-            # Gera imagem
-            recipe_data['imagem_url'] = await generate_recipe_image(recipe_data)
+            # Image generation removed - images now only set manually
+            recipe_data['imagem_url'] = ""
             
             # Cria receita
             recipe = Recipe(**recipe_data)
