@@ -688,7 +688,12 @@ async def import_recipe_from_clipboard(data: ImportRecipeRequest, user_id: str =
 # Shopping list endpoints
 @api_router.get("/shopping-lists", response_model=List[ShoppingList])
 async def get_shopping_lists(user_id: str = Depends(get_current_user)):
-    lists = await db.shopping_lists.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    # Limita a 200 listas mais recentes
+    lists = await db.shopping_lists.find(
+        {"user_id": user_id}, 
+        {"_id": 0}
+    ).limit(200).to_list(200)
+    
     for lst in lists:
         if isinstance(lst['created_at'], str):
             lst['created_at'] = datetime.fromisoformat(lst['created_at'])
