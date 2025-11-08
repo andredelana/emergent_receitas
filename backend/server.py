@@ -991,7 +991,7 @@ async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
 
 @api_router.get("/home/suggestions", response_model=List[Recipe])
 async def get_suggested_recipes(user_id: str = Depends(get_current_user)):
-    """Retorna sugestões de receitas geradas com LLM (1x por dia)"""
+    """Retorna sugestões de receitas geradas com LLM usando ingredientes do usuário"""
     
     # Busca receitas não-sugeridas do usuário
     user_recipes = await db.recipes.find(
@@ -1002,14 +1002,9 @@ async def get_suggested_recipes(user_id: str = Depends(get_current_user)):
     if len(user_recipes) < 2:
         return []
     
-    # Verifica se já gerou sugestões hoje
-    user = await db.users.find_one({"id": user_id}, {"_id": 0})
-    today = datetime.now(timezone.utc).date().isoformat()
-    last_suggestions_date = user.get('last_suggestions_date') if user else None
-    
-    # Se não gerou hoje, busca sugestões existentes primeiro
+    # Busca sugestões existentes
     existing_suggestions = await db.recipes.find(
-        {"user_id": user_id, "is_suggestion": True},
+        {"user_id": user_id, "is_suggestion": True, "suggestion_type": "ingredients"},
         {"_id": 0}
     ).to_list(10)
     
@@ -1018,20 +1013,122 @@ async def get_suggested_recipes(user_id: str = Depends(get_current_user)):
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
     
-    # Se precisa gerar novas (primeira vez do dia ou não tem nenhuma)
-    if last_suggestions_date != today or len(existing_suggestions) == 0:
-        logger.info(f"Generating new suggestions for user {user_id}")
-        
-        # Remove sugestões antigas
-        if len(existing_suggestions) > 0:
-            await db.recipes.delete_many({"user_id": user_id, "is_suggestion": True})
-        
-        # Gera novas sugestões
-        new_suggestions = await generate_recipe_suggestions(user_id)
-        return new_suggestions
+    # Se não tem sugestões, gera automaticamente
+    if len(existing_suggestions) == 0:
+        logger.info(f"Generating ingredient-based suggestions for user {user_id}")
+        new_suggestions = await generate_ingredient_suggestions(user_id)
+        return new_suggestions[:5]
     
-    # Retorna sugestões existentes
+    # Retorna sugestões existentes (máximo 5)
     return existing_suggestions[:5]
+
+@api_router.post("/home/suggestions/refresh", response_model=List[Recipe])
+async def refresh_suggested_recipes(user_id: str = Depends(get_current_user)):
+    """Gera novas sugestões de receitas com ingredientes do usuário"""
+    
+    # Remove sugestões antigas baseadas em ingredientes
+    await db.recipes.delete_many({"user_id": user_id, "is_suggestion": True, "suggestion_type": "ingredients"})
+    
+    # Gera novas sugestões
+    new_suggestions = await generate_ingredient_suggestions(user_id)
+    return new_suggestions[:5]
+
+async def generate_ingredient_suggestions(user_id: str):
+    """Gera receitas baseadas nos ingredientes das receitas do usuário"""
+    try:
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return []
+        
+        # Busca todos os ingredientes das receitas do usuário
+        user_recipes = await db.recipes.find(
+            {"user_id": user_id, "is_suggestion": False},
+            {"_id": 0, "ingredients": 1}
+        ).to_list(1000)
+        
+        if not user_recipes:
+            return []
+        
+        # Coleta todos os ingredientes únicos
+        all_ingredients = set()
+        for recipe in user_recipes:
+            for ing in recipe.get('ingredients', []):
+                all_ingredients.add(ing['name'].lower())
+        
+        ingredients_list = list(all_ingredients)[:20]  # Limita a 20 ingredientes
+        
+        if len(ingredients_list) < 3:
+            return []
+        
+        # Gera prompt para LLM
+        prompt = f"""Você é um chef experiente. Baseado nos ingredientes que o usuário mais usa: {', '.join(ingredients_list[:15])}, 
+        sugira 5 receitas brasileiras criativas e deliciosas que usem alguns desses ingredientes.
+
+Retorne APENAS um array JSON válido, sem texto adicional. Cada receita deve ter:
+- name: nome atrativo da receita
+- portions: número de porções (entre 2 e 6)
+- ingredients: array com pelo menos 4 ingredientes. Cada ingrediente deve ter:
+  * name: nome do ingrediente
+  * quantity: quantidade numérica
+  * unit: unidade de medida (g, kg, ml, l, xícara, colher, unidade)
+  * mandatory: true para ingredientes principais, false para opcionais
+- notes: modo de preparo resumido (2-3 frases)
+- tempo_preparo: tempo em minutos
+- calorias_por_porcao: estimativa de calorias
+- custo_estimado: custo estimado em reais
+- restricoes: array de restrições alimentares (ex: ["vegetariano"], ["vegano"], [] se não houver)
+
+Exemplo de formato:
+[{{"name": "Frango Assado com Batatas", "portions": 4, "ingredients": [{{"name": "frango", "quantity": 1, "unit": "kg", "mandatory": true}}], "notes": "Tempere o frango...", "tempo_preparo": 60, "calorias_por_porcao": 350, "custo_estimado": 25.50, "restricoes": []}}]"""
+        
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"ingredient-suggestions-{user_id}-{uuid.uuid4()}",
+            system_message="Você é um chef brasileiro especialista. Retorne APENAS JSON válido."
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Parse JSON
+        import json
+        import re
+        json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
+        if not json_match:
+            return []
+        
+        recipes_data = json.loads(json_match.group(0))
+        
+        # Cria receitas no banco
+        new_recipes = []
+        for recipe_data in recipes_data[:5]:
+            recipe_dict = {
+                'id': str(uuid.uuid4()),
+                'user_id': user_id,
+                'name': recipe_data['name'],
+                'portions': recipe_data.get('portions', 4),
+                'ingredients': recipe_data.get('ingredients', []),
+                'notes': recipe_data.get('notes', ''),
+                'imagem_url': '',
+                'tempo_preparo': recipe_data.get('tempo_preparo', 0),
+                'calorias_por_porcao': recipe_data.get('calorias_por_porcao', 0),
+                'custo_estimado': recipe_data.get('custo_estimado', 0),
+                'restricoes': recipe_data.get('restricoes', []),
+                'created_at': datetime.now(timezone.utc),
+                'is_suggestion': True,
+                'suggestion_type': 'ingredients'
+            }
+            
+            recipe = Recipe(**recipe_dict)
+            recipe_doc = recipe.model_dump()
+            recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
+            await db.recipes.insert_one(recipe_doc)
+            new_recipes.append(recipe)
+        
+        return new_recipes
+    
+    except Exception as e:
+        logger.error(f"Erro ao gerar sugestões baseadas em ingredientes: {str(e)}")
+        return []
 
 @api_router.get("/home/trending", response_model=List[Recipe])
 async def get_trending_recipes(user_id: str = Depends(get_current_user)):
