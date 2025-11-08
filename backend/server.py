@@ -413,10 +413,20 @@ async def login(credentials: UserLogin):
             await db.shopping_lists.insert_one(list_doc)
             
             token = create_token(user_id, "dev")
-            return TokenResponse(token=token, name="Dev", username="dev")
+            return TokenResponse(
+                token=token, 
+                name="Dev", 
+                username="dev",
+                has_completed_onboarding=user.get('has_completed_onboarding', True)  # Dev sempre True
+            )
         else:
             token = create_token(user['id'], user['username'])
-            return TokenResponse(token=token, name=user['name'], username=user['username'])
+            return TokenResponse(
+                token=token, 
+                name=user['name'], 
+                username=user['username'],
+                has_completed_onboarding=user.get('has_completed_onboarding', True)  # Dev sempre True
+            )
     
     if not user:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
@@ -425,7 +435,12 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
     
     token = create_token(user['id'], user['username'])
-    return TokenResponse(token=token, name=user['name'], username=user['username'])
+    return TokenResponse(
+        token=token, 
+        name=user['name'], 
+        username=user['username'],
+        has_completed_onboarding=user.get('has_completed_onboarding', False)
+    )
 
 # Helper function para estimar valores com LLM
 async def estimate_recipe_values(recipe_data: dict) -> dict:
