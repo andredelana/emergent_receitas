@@ -153,9 +153,9 @@ function Home({ userName, onLogout }) {
   };
 
   const RecipeCard = ({ recipe, showActions = false }) => (
-    <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden">
+    <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden h-full flex flex-col">
       {recipe.imagem_url && (
-        <div className="relative h-48 w-full overflow-hidden">
+        <div className="relative h-40 w-full overflow-hidden">
           <img
             src={recipe.imagem_url}
             alt={recipe.name}
@@ -163,52 +163,65 @@ function Home({ userName, onLogout }) {
           />
         </div>
       )}
-      <CardHeader>
-        <CardTitle className="text-lg line-clamp-2" style={{ fontFamily: 'Work Sans, sans-serif' }}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg line-clamp-2 mb-2" style={{ fontFamily: 'Work Sans, sans-serif' }}>
           {recipe.name}
         </CardTitle>
-        <CardDescription>
-          {recipe.portions} porções • {recipe.ingredients?.length || 0} ingredientes
-        </CardDescription>
       </CardHeader>
-      <CardContent>
-        {recipe.notes && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-2">{recipe.notes}</p>
-        )}
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-gray-700">Ingredientes principais:</p>
-          {recipe.ingredients?.slice(0, 3).map((ing, idx) => (
-            <p key={idx} className="text-xs text-gray-600">
-              • {ing.name}
-            </p>
-          ))}
-          {recipe.ingredients?.length > 3 && (
-            <p className="text-xs text-gray-400 italic">+ {recipe.ingredients.length - 3} mais</p>
+      <CardContent className="flex-1 flex flex-col justify-between">
+        {/* Informações principais em grid compacto */}
+        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+          <div className="flex items-center gap-1 text-gray-600">
+            <ChefHat className="w-3 h-3" />
+            <span>{recipe.portions} porções</span>
+          </div>
+          <div className="flex items-center gap-1 text-gray-600">
+            <ListChecks className="w-3 h-3" />
+            <span>{recipe.ingredients?.length || 0} ingredientes</span>
+          </div>
+          {recipe.tempo_preparo > 0 && (
+            <div className="flex items-center gap-1 text-gray-600">
+              <span>⏱️</span>
+              <span>{recipe.tempo_preparo} min</span>
+            </div>
+          )}
+          {recipe.calorias_por_porcao > 0 && (
+            <div className="flex items-center gap-1 text-gray-600">
+              <span>🔥</span>
+              <span>{recipe.calorias_por_porcao} kcal</span>
+            </div>
+          )}
+          {recipe.custo_estimado > 0 && (
+            <div className="flex items-center gap-1 text-gray-600">
+              <span>💰</span>
+              <span>R$ {recipe.custo_estimado.toFixed(2)}</span>
+            </div>
           )}
         </div>
+        
+        {showActions && (
+          <div className="flex flex-col gap-2 pt-2 border-t">
+            <Button
+              onClick={() => handleCopyRecipe(recipe.id)}
+              variant="outline"
+              className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
+              size="sm"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar às minhas receitas
+            </Button>
+            <Button
+              onClick={() => handleAddToQuickList(recipe)}
+              variant="outline"
+              className="w-full border-green-300 text-green-700 hover:bg-green-50"
+              size="sm"
+            >
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Adicionar à lista rápida
+            </Button>
+          </div>
+        )}
       </CardContent>
-      {showActions && (
-        <CardFooter className="flex flex-col gap-2">
-          <Button
-            onClick={() => handleCopyRecipe(recipe.id)}
-            variant="outline"
-            className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
-            size="sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar às minhas receitas
-          </Button>
-          <Button
-            onClick={() => handleAddToQuickList(recipe)}
-            variant="outline"
-            className="w-full border-green-300 text-green-700 hover:bg-green-50"
-            size="sm"
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Adicionar à lista rápida
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 
