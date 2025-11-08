@@ -485,9 +485,6 @@ function Recipes({ userName, onLogout }) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {recipe.notes && (
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">{recipe.notes}</p>
-                  )}
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-gray-700 mb-1">Ingredientes:</p>
                     {recipe.ingredients.slice(0, 3).map((ing, idx) => (
