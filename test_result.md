@@ -164,6 +164,45 @@ backend:
         - working: true
           agent: "main"
           comment: "imagem_url field kept in Recipe model. Users can still manually set/update images via the regular update endpoint."
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED: Manual image setting works correctly. Recipe updated with imagem_url='https://example.com/test-image.jpg' and value saved properly. Manual image URLs are accepted and stored without interference from system."
+
+  - task: "Recipe creation without AI image generation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED: Recipe creation WITHOUT providing imagem_url creates recipes with empty string imagem_url field. No AI image generation occurs. Recipe 'Teste Sem Geração de Imagem' created successfully with imagem_url='' as expected."
+
+  - task: "Recipe update without AI image generation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED: Recipe updates WITHOUT providing imagem_url keep imagem_url empty (not auto-generated). Recipe updated with notes change and imagem_url remained '' as expected. No AI image generation triggered during updates."
+
+  - task: "Generate image endpoint disabled"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED: POST /api/recipes/{recipe_id}/generate-image returns 501 status code with error message 'Image generation disabled - please set images manually' as expected. Endpoint properly disabled."
 
   - task: "Login with dev credentials"
     implemented: true
