@@ -92,7 +92,7 @@ function Home({ userName, onLogout }) {
   };
 
   // Componente de Carrossel
-  const RecipeCarousel = ({ recipes, showActions = false }) => {
+  const RecipeCarousel = ({ recipes, showActions = false, actionsType = 'full' }) => {
     const scrollRef = useRef(null);
 
     const scroll = (direction) => {
@@ -135,7 +135,7 @@ function Home({ userName, onLogout }) {
         >
           {recipes.map((recipe) => (
             <div key={recipe.id} className="flex-shrink-0" style={{ width: '350px' }}>
-              <RecipeCard recipe={recipe} showActions={showActions} />
+              <RecipeCard recipe={recipe} showActions={showActions} actionsType={actionsType} />
             </div>
           ))}
         </div>
