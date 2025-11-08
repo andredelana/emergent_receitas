@@ -284,15 +284,18 @@ backend:
 
   - task: "TudoGostoso recipe import"
     implemented: true
-    working: true
+    working: false
     file: "server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "testing"
           comment: "POST /api/recipes/import-from-tudogostoso endpoint working correctly. Returns complete recipe data with name, portions, ingredients (with quantity, unit, mandatory fields), notes, and link. **MOCKED** fallback implemented due to Cloudflare protection. Mock data provides realistic recipe structure for testing."
+        - working: false
+          agent: "testing"
+          comment: "CRITICAL: TudoGostoso recipe import failing with 500 error due to missing 'cloudscraper' dependency. ModuleNotFoundError: No module named 'cloudscraper'. Fallback mock data not being reached because import fails before exception handling."
 
 frontend:
   # No frontend testing performed as per instructions
