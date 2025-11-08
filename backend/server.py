@@ -1142,7 +1142,7 @@ Exemplo de formato:
         # Parse JSON
         import json
         import re
-        json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
+        json_match = re.search(r'\[.*\]', response, re.DOTALL)
         if not json_match:
             return []
         
@@ -1253,7 +1253,7 @@ Exemplo de formato:
         # Parse JSON
         import json
         import re
-        json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
+        json_match = re.search(r'\[.*\]', response, re.DOTALL)
         if not json_match:
             return []
         
