@@ -328,7 +328,7 @@ function Home({ userName, onLogout }) {
                 )}
               </div>
               {favorites.length > 0 ? (
-                <RecipeCarousel recipes={favorites} showActions={false} />
+                <RecipeCarousel recipes={favorites} showActions={true} actionsType="quicklist" />
               ) : (
                 <div className="bg-white/60 backdrop-blur rounded-xl p-8 text-center">
                   <ChefHat className="w-16 h-16 mx-auto text-gray-300 mb-4" />
