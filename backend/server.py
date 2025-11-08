@@ -974,15 +974,15 @@ async def get_favorite_recipes(user_id: str = Depends(get_current_user)):
             for recipe_id in item.get('recipe_ids', []):
                 recipe_count[recipe_id] = recipe_count.get(recipe_id, 0) + 1
     
-    # Ordena por contagem e pega top 6
-    top_recipe_ids = sorted(recipe_count.items(), key=lambda x: x[1], reverse=True)[:6]
+    # Ordena por contagem e pega top 10
+    top_recipe_ids = sorted(recipe_count.items(), key=lambda x: x[1], reverse=True)[:10]
     top_ids = [rid for rid, _ in top_recipe_ids]
     
     if not top_ids:
         return []
     
     # Busca as receitas
-    recipes = await db.recipes.find({"id": {"$in": top_ids}, "user_id": user_id}, {"_id": 0}).to_list(6)
+    recipes = await db.recipes.find({"id": {"$in": top_ids}, "user_id": user_id}, {"_id": 0}).to_list(10)
     for recipe in recipes:
         if isinstance(recipe['created_at'], str):
             recipe['created_at'] = datetime.fromisoformat(recipe['created_at'])
