@@ -127,12 +127,20 @@ function ShoppingListDetail({ userName, onLogout }) {
 
   const toggleItemBought = async (itemId, currentStatus) => {
     try {
+      // Atualiza o estado local imediatamente
+      const updatedItems = list.items.map(item => 
+        item.id === itemId ? { ...item, bought: !currentStatus } : item
+      );
+      setList({ ...list, items: updatedItems });
+      
+      // Atualiza no servidor
       await axios.put(`${API}/shopping-lists/${id}/items/${itemId}`, {
         bought: !currentStatus
       });
-      loadList();
     } catch (error) {
       toast.error("Erro ao atualizar item");
+      // Reverte em caso de erro
+      loadList();
     }
   };
 
