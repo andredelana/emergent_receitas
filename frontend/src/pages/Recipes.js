@@ -441,7 +441,7 @@ function Recipes({ userName, onLogout }) {
                 key={recipe.id} 
                 className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden cursor-pointer" 
                 data-testid={`recipe-card-${recipe.id}`}
-                onClick={() => navigate(`/receitas/editar/${recipe.id}`)}
+                onClick={() => setViewRecipeDialog(recipe)}
               >
                 {recipe.imagem_url && (
                   <div className="relative h-48 w-full overflow-hidden">
