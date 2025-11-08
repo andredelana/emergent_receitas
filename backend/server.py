@@ -359,6 +359,7 @@ async def register(user_data: UserRegister):
         "username": user_data.username,
         "password_hash": hashed_pwd,
         "name": user_data.name,
+        "has_completed_onboarding": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
