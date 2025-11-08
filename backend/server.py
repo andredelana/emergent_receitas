@@ -1142,8 +1142,10 @@ Exemplo de formato:
         # Parse JSON
         import json
         import re
+        # response já é uma string, não precisa usar .text
         json_match = re.search(r'\[.*\]', response, re.DOTALL)
         if not json_match:
+            logger.error(f"Could not find JSON array in LLM response: {response[:200]}")
             return []
         
         recipes_data = json.loads(json_match.group(0))
