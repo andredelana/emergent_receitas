@@ -572,6 +572,14 @@ function Recipes({ userName, onLogout }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Visualização da Receita */}
+      <RecipeViewDialog
+        recipe={viewRecipeDialog}
+        open={!!viewRecipeDialog}
+        onClose={() => setViewRecipeDialog(null)}
+        onAddToList={handleAddToQuickList}
+      />
     </div>
   );
 }
