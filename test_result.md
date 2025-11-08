@@ -219,11 +219,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "testing"
           comment: "All recipe CRUD operations (Create, Read, Update, Delete) working correctly. Recipe creation, listing, updating, and deletion all pass tests."
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED: Recipe creation WITHOUT imagem_url creates recipes with empty string imagem_url field (not auto-generated). Recipe updates WITHOUT imagem_url keep imagem_url empty (not auto-generated). Manual imagem_url setting works correctly. All CRUD operations confirmed working with AI image generation removed."
 
   - task: "Authentication system"
     implemented: true
