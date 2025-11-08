@@ -1323,6 +1323,165 @@ Exemplo de formato:
         logger.error(f"Erro ao gerar sugestões de tendências: {str(e)}")
         return []
 
+@api_router.post("/onboarding/complete")
+async def complete_onboarding(user_id: str = Depends(get_current_user)):
+    """Rotina de onboarding para novos usuários"""
+    try:
+        # Verifica se já completou onboarding
+        user = await db.users.find_one({"id": user_id})
+        if user and user.get('has_completed_onboarding', False):
+            return {"message": "Onboarding já foi completado", "success": True}
+        
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            raise HTTPException(status_code=500, detail="LLM key not configured")
+        
+        logger.info(f"Iniciando onboarding para usuário {user_id}")
+        
+        # 1. Criar 3 receitas aleatórias com LLM
+        prompt = """Você é um chef experiente. Crie 3 receitas brasileiras populares e fáceis de fazer.
+
+Retorne APENAS um array JSON válido, sem texto adicional. Cada receita deve ter:
+- name: nome da receita
+- portions: número de porções (entre 2 e 4)
+- ingredients: array com pelo menos 5 ingredientes. Cada ingrediente deve ter:
+  * name: nome do ingrediente
+  * quantity: quantidade numérica
+  * unit: unidade de medida (g, kg, ml, l, xícara, colher, unidade)
+  * mandatory: true para ingredientes principais, false para opcionais
+- notes: modo de preparo detalhado passo a passo
+
+Exemplo de formato:
+[{{"name": "Arroz com Feijão", "portions": 4, "ingredients": [{{"name": "arroz", "quantity": 2, "unit": "xícara", "mandatory": true}}], "notes": "Modo de Preparo:\n1. Lave o arroz...\n2. Cozinhe..."}}]
+
+Escolha receitas variadas: uma com carne, uma vegetariana, e uma doce."""
+
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"onboarding-{user_id}-{uuid.uuid4()}",
+            system_message="Você é um chef brasileiro especialista. Retorne APENAS JSON válido."
+        ).with_model("openai", "gpt-4o")
+        
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Parse JSON
+        import json
+        import re
+        json_match = re.search(r'\[.*\]', response, re.DOTALL)
+        if not json_match:
+            logger.error(f"Could not find JSON array in LLM response: {response[:200]}")
+            raise HTTPException(status_code=500, detail="Failed to generate recipes")
+        
+        recipes_data = json.loads(json_match.group(0))
+        
+        created_recipe_ids = []
+        
+        # Cria as 3 receitas no banco
+        for recipe_data in recipes_data[:3]:
+            # Valida e corrige ingredientes
+            if 'ingredients' in recipe_data and isinstance(recipe_data['ingredients'], list):
+                valid_ingredients = []
+                for ing in recipe_data['ingredients']:
+                    if ing.get('quantity') is None or ing.get('quantity') == '':
+                        ing['quantity'] = 1.0
+                    else:
+                        try:
+                            ing['quantity'] = float(ing['quantity'])
+                        except (ValueError, TypeError):
+                            ing['quantity'] = 1.0
+                    
+                    if not ing.get('unit'):
+                        ing['unit'] = 'unidade'
+                    
+                    if not isinstance(ing.get('mandatory'), bool):
+                        ing['mandatory'] = True
+                    
+                    if ing.get('name'):
+                        valid_ingredients.append(ing)
+                
+                recipe_data['ingredients'] = valid_ingredients
+            
+            # Garante campos obrigatórios
+            if not recipe_data.get('name'):
+                recipe_data['name'] = 'Receita'
+            if not recipe_data.get('portions') or recipe_data['portions'] <= 0:
+                recipe_data['portions'] = 4
+            if not recipe_data.get('notes'):
+                recipe_data['notes'] = ''
+            
+            recipe_dict = {
+                'id': str(uuid.uuid4()),
+                'user_id': user_id,
+                'name': recipe_data['name'],
+                'portions': recipe_data.get('portions', 4),
+                'ingredients': recipe_data.get('ingredients', []),
+                'notes': recipe_data.get('notes', ''),
+                'link': '',
+                'imagem_url': '',
+                'tempo_preparo': 0,
+                'calorias_por_porcao': 0,
+                'custo_estimado': 0,
+                'restricoes': [],
+                'created_at': datetime.now(timezone.utc),
+                'is_suggestion': False
+            }
+            
+            # Estima valores com LLM
+            recipe_dict = await estimate_recipe_values(recipe_dict)
+            
+            recipe = Recipe(**recipe_dict)
+            recipe_doc = recipe.model_dump()
+            recipe_doc['created_at'] = recipe_doc['created_at'].isoformat()
+            await db.recipes.insert_one(recipe_doc)
+            created_recipe_ids.append(recipe.id)
+        
+        logger.info(f"Criadas {len(created_recipe_ids)} receitas para onboarding")
+        
+        # 2. Adicionar todas as receitas à lista rápida
+        lists = await db.shopping_lists.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+        quick_list = next((l for l in lists if l.get('is_quick_list', False)), None)
+        
+        if quick_list:
+            for recipe_id in created_recipe_ids:
+                await axios.post(f"http://localhost:8001/api/shopping-lists/{quick_list['id']}/add-recipe", 
+                    json={"recipe_id": recipe_id, "portions": 4},
+                    headers={"Authorization": f"Bearer {create_token(user_id, user.get('username', 'user'))}"}
+                )
+        
+        logger.info(f"Receitas adicionadas à lista rápida")
+        
+        # 3. Gerar sugestões "Com Seus Ingredientes"
+        try:
+            await generate_ingredient_suggestions(user_id)
+            logger.info(f"Sugestões de ingredientes geradas")
+        except Exception as e:
+            logger.error(f"Erro ao gerar sugestões de ingredientes: {str(e)}")
+        
+        # 4. Gerar sugestões "Tendências"
+        try:
+            await generate_trending_suggestions(user_id)
+            logger.info(f"Sugestões de tendências geradas")
+        except Exception as e:
+            logger.error(f"Erro ao gerar sugestões de tendências: {str(e)}")
+        
+        # 5. Marcar onboarding como completo
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"has_completed_onboarding": True}}
+        )
+        
+        logger.info(f"Onboarding completado para usuário {user_id}")
+        
+        return {
+            "message": "Onboarding completado com sucesso",
+            "success": True,
+            "recipes_created": len(created_recipe_ids)
+        }
+        
+    except Exception as e:
+        logger.error(f"Erro no onboarding: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro no onboarding: {str(e)}")
+
 @api_router.post("/recipes/{recipe_id}/copy")
 async def copy_recipe_to_my_recipes(recipe_id: str, user_id: str = Depends(get_current_user)):
     """Copia uma receita para as receitas do usuário"""
