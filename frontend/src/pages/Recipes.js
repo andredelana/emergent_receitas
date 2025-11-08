@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChefHat, Plus, Edit, Trash2, ShoppingCart, LogOut, List, Search, Filter, X, Clock, DollarSign, Flame, Leaf, Wheat, Milk } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { RecipeViewDialog } from "@/components/RecipeViewDialog";
 
 // Ícones de restrições
 const RESTRICTION_ICONS = {
