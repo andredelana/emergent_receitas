@@ -431,64 +431,6 @@ function Recipes({ userName, onLogout }) {
                 </div>
               </div>
             )}
-                    <Select value={filters.calorias} onValueChange={(val) => setFilters({ ...filters, calorias: val })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todos">Todas</SelectItem>
-                        <SelectItem value="baixo">Baixo (&lt; 250 kcal)</SelectItem>
-                        <SelectItem value="medio">Médio (250-600 kcal)</SelectItem>
-                        <SelectItem value="alto">Alto (&gt; 600 kcal)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Custo */}
-                  <div>
-                    <Label className="text-sm mb-2">Custo estimado</Label>
-                    <Select value={filters.custo} onValueChange={(val) => setFilters({ ...filters, custo: val })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todos">Todos</SelectItem>
-                        <SelectItem value="baixo">Baixo (&lt; R$ 20)</SelectItem>
-                        <SelectItem value="medio">Médio (R$ 20-50)</SelectItem>
-                        <SelectItem value="alto">Alto (&gt; R$ 50)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Restrições Alimentares */}
-                <div>
-                  <Label className="text-sm mb-3 block">Restrições Alimentares</Label>
-                  <div className="flex flex-wrap gap-3">
-                    {RESTRICTIONS.map((restriction) => {
-                      const IconData = RESTRICTION_ICONS[restriction];
-                      const Icon = IconData?.icon;
-                      return (
-                        <div key={restriction} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`restriction-${restriction}`}
-                            checked={filters.restricoes.includes(restriction)}
-                            onCheckedChange={() => toggleRestriction(restriction)}
-                          />
-                          <label
-                            htmlFor={`restriction-${restriction}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1 cursor-pointer"
-                          >
-                            {Icon && <Icon className={`h-4 w-4 ${IconData.color}`} />}
-                            {IconData?.label}
-                          </label>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
