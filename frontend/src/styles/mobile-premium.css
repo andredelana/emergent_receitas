@@ -24,6 +24,11 @@ button, input, select, textarea {
   max-width: 100%;
 }
 
+/* Prevent ResizeObserver issues with dropdowns */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
 /* Touch-friendly tap highlights */
 * {
   -webkit-tap-highlight-color: rgba(251, 146, 60, 0.1);
