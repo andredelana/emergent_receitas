@@ -427,10 +427,26 @@ function RecipeForm({ userName, onLogout }) {
                     id="portions"
                     data-testid="recipe-portions-input"
                     type="number"
-                    min="1"
                     value={formData.portions}
-                    onChange={(e) => setFormData({ ...formData, portions: parseInt(e.target.value) || 1 })}
-                    required
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Permite campo vazio ou qualquer número inteiro
+                      if (value === '') {
+                        setFormData({ ...formData, portions: '' });
+                      } else {
+                        const numValue = parseInt(value);
+                        if (!isNaN(numValue)) {
+                          setFormData({ ...formData, portions: numValue });
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Se ficar vazio ao sair do campo, define como 1
+                      if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                        setFormData({ ...formData, portions: 1 });
+                      }
+                    }}
+                    placeholder="Número de porções"
                   />
                 </div>
               </div>
