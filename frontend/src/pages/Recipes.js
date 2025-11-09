@@ -586,7 +586,7 @@ function Recipes({ userName, onLogout }) {
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-gray-700 mb-1">Ingredientes:</p>
                     {recipe.ingredients.slice(0, 3).map((ing, idx) => (
-                      <p key={idx} className="text-xs text-gray-600">
+                      <p key={idx} className="text-xs text-gray-600 truncate">
                         • {ing.name} ({ing.quantity} {ing.unit})
                       </p>
                     ))}
@@ -595,22 +595,22 @@ function Recipes({ userName, onLogout }) {
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                <CardFooter className="flex gap-2 pt-0" onClick={(e) => e.stopPropagation()}>
                   <Button
                     data-testid={`add-to-list-${recipe.id}`}
                     variant="outline"
                     size="sm"
-                    className="flex-1 border-green-300 text-green-700 hover:bg-green-50"
+                    className="flex-1 border-green-300 text-green-700 hover:bg-green-50 min-h-[40px] rounded-xl text-xs sm:text-sm"
                     onClick={() => handleAddToQuickList(recipe)}
                   >
-                    <ShoppingCart className="mr-1 h-4 w-4" />
-                    Adicionar
+                    <ShoppingCart className="mr-1 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Adicionar</span>
                   </Button>
                   <Button
                     data-testid={`edit-recipe-${recipe.id}`}
                     variant="outline"
                     size="sm"
-                    className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                    className="border-orange-300 text-orange-700 hover:bg-orange-50 min-h-[40px] min-w-[40px] rounded-xl"
                     onClick={() => navigate(`/receitas/editar/${recipe.id}`)}
                   >
                     <Edit className="h-4 w-4" />
@@ -618,6 +618,13 @@ function Recipes({ userName, onLogout }) {
                   <Button
                     data-testid={`delete-recipe-${recipe.id}`}
                     variant="outline"
+                    size="sm"
+                    className="border-red-300 text-red-700 hover:bg-red-50 min-h-[40px] min-w-[40px] rounded-xl"
+                    onClick={() => handleDelete(recipe.id, recipe.name)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardFooter>
                     size="sm"
                     className="border-red-300 text-red-700 hover:bg-red-50"
                     onClick={() => handleDelete(recipe.id, recipe.name)}
