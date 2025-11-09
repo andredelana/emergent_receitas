@@ -567,13 +567,6 @@ function Recipes({ userName, onLogout }) {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </CardFooter>
-                    size="sm"
-                    className="border-red-300 text-red-700 hover:bg-red-50"
-                    onClick={() => handleDelete(recipe.id, recipe.name)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardFooter>
               </Card>
             ))}
           </div>
