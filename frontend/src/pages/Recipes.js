@@ -247,107 +247,187 @@ function Recipes({ userName, onLogout }) {
 
         {/* Barra de Filtros e Ordenação */}
         <Card className="mb-6 border-0 bg-white/80 backdrop-blur shadow-md">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Filtros
-                {hasActiveFilters() && (
-                  <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full">
-                    {Object.values(filters).flat().filter(Boolean).length}
-                  </span>
-                )}
-              </Button>
-
-              {hasActiveFilters() && (
+          <CardContent className="pt-4 sm:pt-6">
+            {/* Mobile-Optimized Filter & Sort Bar */}
+            <div className="space-y-3">
+              {/* Top Row - Filter & Sort Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                {/* Filter Button */}
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="text-gray-600"
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex-1 sm:flex-none min-h-[44px] rounded-xl flex items-center justify-center gap-2 font-medium"
                 >
-                  <X className="h-4 w-4 mr-1" />
-                  Limpar filtros
+                  <Filter className="h-4 w-4" />
+                  <span>Filtros</span>
+                  {hasActiveFilters() && (
+                    <span className="ml-1 px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full font-bold">
+                      {Object.values(filters).flat().filter(Boolean).length}
+                    </span>
+                  )}
                 </Button>
-              )}
 
-              <div className="ml-auto flex items-center gap-2">
-                <Label className="text-sm text-gray-600">Ordenar por:</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recentes">Mais Recentes</SelectItem>
-                    <SelectItem value="antigas">Mais Antigas</SelectItem>
-                    <SelectItem value="nome-az">Nome (A-Z)</SelectItem>
-                    <SelectItem value="nome-za">Nome (Z-A)</SelectItem>
-                    <SelectItem value="tempo">Menor Tempo</SelectItem>
-                    <SelectItem value="custo">Menor Custo</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Sort Dropdown - Full width on mobile */}
+                <div className="flex-1">
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-full min-h-[44px] rounded-xl font-medium">
+                      <SelectValue placeholder="Ordenar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recentes">Mais Recentes</SelectItem>
+                      <SelectItem value="antigas">Mais Antigas</SelectItem>
+                      <SelectItem value="nome-az">Nome (A-Z)</SelectItem>
+                      <SelectItem value="nome-za">Nome (Z-A)</SelectItem>
+                      <SelectItem value="tempo">Menor Tempo</SelectItem>
+                      <SelectItem value="custo">Menor Custo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Clear Filters Button - Only show when filters active */}
+                {hasActiveFilters() && (
+                  <Button
+                    variant="ghost"
+                    onClick={clearFilters}
+                    className="flex-1 sm:flex-none min-h-[44px] rounded-xl text-gray-600 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <X className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Limpar</span>
+                  </Button>
+                )}
               </div>
             </div>
 
-            {/* Painel de Filtros Expandível */}
+            {/* Expandable Filters Panel */}
             {showFilters && (
-              <div className="border-t pt-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Busca por palavra-chave */}
-                  <div>
-                    <Label className="text-sm mb-2">Palavra-chave</Label>
+              <div className="mt-4 p-4 border rounded-2xl bg-gray-50 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                {/* Mobile-First Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Search by Keyword */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700">Buscar</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Nome ou observações..."
+                        placeholder="Nome da receita..."
                         value={filters.keyword}
                         onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-                        className="pl-10"
+                        className="pl-10 min-h-[44px] rounded-xl"
                       />
                     </div>
                   </div>
 
-                  {/* Busca por ingrediente */}
-                  <div>
-                    <Label className="text-sm mb-2">Ingrediente</Label>
+                  {/* Search by Ingredient */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700">Ingrediente</Label>
                     <Input
-                      placeholder="Ex: tomate, farinha..."
+                      placeholder="Ex: tomate..."
                       value={filters.ingredient}
                       onChange={(e) => setFilters({ ...filters, ingredient: e.target.value })}
+                      className="min-h-[44px] rounded-xl"
                     />
                   </div>
 
-                  {/* Porções */}
-                  <div>
-                    <Label className="text-sm mb-2">Porções</Label>
+                  {/* Portions */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700">Porções</Label>
                     <Input
                       type="number"
                       min="1"
-                      placeholder="Número de porções"
+                      placeholder="Nº porções"
                       value={filters.portions}
                       onChange={(e) => setFilters({ ...filters, portions: e.target.value })}
+                      className="min-h-[44px] rounded-xl"
                     />
                   </div>
 
-                  {/* Tempo de preparo */}
-                  <div>
-                    <Label className="text-sm mb-2">Tempo máximo (min)</Label>
+                  {/* Max Prep Time */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700">Tempo máx (min)</Label>
                     <Input
                       type="number"
                       min="1"
                       placeholder="Ex: 30"
                       value={filters.tempoPreparo}
                       onChange={(e) => setFilters({ ...filters, tempoPreparo: e.target.value })}
+                      className="min-h-[44px] rounded-xl"
                     />
                   </div>
 
-                  {/* Calorias */}
-                  <div>
-                    <Label className="text-sm mb-2">Calorias por porção</Label>
+                  {/* Calories */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700">Calorias</Label>
+                    <Select 
+                      value={filters.calorias} 
+                      onValueChange={(value) => setFilters({ ...filters, calorias: value })}
+                    >
+                      <SelectTrigger className="min-h-[44px] rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todos">Todas</SelectItem>
+                        <SelectItem value="baixo">Baixo (&lt; 300)</SelectItem>
+                        <SelectItem value="medio">Médio (300-500)</SelectItem>
+                        <SelectItem value="alto">Alto (&gt; 500)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Cost */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700">Custo</Label>
+                    <Select 
+                      value={filters.custo} 
+                      onValueChange={(value) => setFilters({ ...filters, custo: value })}
+                    >
+                      <SelectTrigger className="min-h-[44px] rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todos">Todos</SelectItem>
+                        <SelectItem value="baixo">Baixo (&lt; R$20)</SelectItem>
+                        <SelectItem value="medio">Médio (R$20-40)</SelectItem>
+                        <SelectItem value="alto">Alto (&gt; R$40)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Dietary Restrictions */}
+                <div className="space-y-3 pt-4 border-t">
+                  <Label className="text-sm font-semibold text-gray-700">Restrições Alimentares</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {RESTRICTIONS.map((restricao) => {
+                      const config = RESTRICTION_ICONS[restricao];
+                      const Icon = config?.icon || Leaf;
+                      return (
+                        <div key={restricao} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`filter-${restricao}`}
+                            checked={filters.restricoes.includes(restricao)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setFilters({ ...filters, restricoes: [...filters.restricoes, restricao] });
+                              } else {
+                                setFilters({ ...filters, restricoes: filters.restricoes.filter(r => r !== restricao) });
+                              }
+                            }}
+                            className="min-h-[20px] min-w-[20px]"
+                          />
+                          <Label 
+                            htmlFor={`filter-${restricao}`} 
+                            className="text-sm font-normal capitalize cursor-pointer flex items-center gap-1 truncate"
+                          >
+                            <Icon className={`h-3 w-3 ${config?.color || 'text-gray-600'} flex-shrink-0`} />
+                            <span className="truncate">{config?.label || restricao}</span>
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
                     <Select value={filters.calorias} onValueChange={(val) => setFilters({ ...filters, calorias: val })}>
                       <SelectTrigger>
                         <SelectValue />
