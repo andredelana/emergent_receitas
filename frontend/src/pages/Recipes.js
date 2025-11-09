@@ -223,25 +223,28 @@ function Recipes({ userName, onLogout }) {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-green-50">
       <Navbar userName={userName} onLogout={onLogout} />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Mobile-Optimized Header */}
+        <div className="mb-6 space-y-4">
+          {/* Title & Count */}
           <div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2 break-words" style={{ fontFamily: 'Playfair Display, serif' }}>
               Minhas Receitas
             </h1>
-            <p className="text-gray-600" style={{ fontFamily: 'Work Sans, sans-serif' }}>
+            <p className="text-sm sm:text-base text-gray-600" style={{ fontFamily: 'Work Sans, sans-serif' }}>
               {filteredRecipes.length} {filteredRecipes.length === 1 ? 'receita' : 'receitas'}
               {hasActiveFilters() && ' (filtradas)'}
             </p>
           </div>
+          
+          {/* Action Button - Full width on mobile */}
           <Button
             data-testid="create-recipe-button"
             onClick={() => navigate("/receitas/nova")}
-            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white"
-            size="lg"
+            className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white min-h-[48px] rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <Plus className="mr-2 h-5 w-5" />
-            Nova Receita
+            <span>Nova Receita</span>
           </Button>
         </div>
 
