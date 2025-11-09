@@ -13,6 +13,17 @@ body {
   max-width: 100vw;
 }
 
+/* Prevent text overflow globally */
+* {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Ensure buttons and inputs don't overflow */
+button, input, select, textarea {
+  max-width: 100%;
+}
+
 /* Touch-friendly tap highlights */
 * {
   -webkit-tap-highlight-color: rgba(251, 146, 60, 0.1);
@@ -38,6 +49,38 @@ button:active, a:active {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Utility classes for text overflow control */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.break-words {
+  word-break: break-word;
+}
+
 /* Fade in animation */
 @keyframes fadeIn {
   from {
@@ -52,6 +95,10 @@ button:active, a:active {
 
 .fade-in {
   animation: fadeIn 0.4s ease-out;
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* Skeleton loader */
@@ -107,6 +154,12 @@ button:active, a:active {
   button {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Ensure proper spacing on mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 
