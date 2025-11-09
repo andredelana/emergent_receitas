@@ -165,62 +165,6 @@ function RecipeForm({ userName, onLogout }) {
     }
   };
 
-  const searchWebRecipes = async () => {
-    if (!formData.name || formData.name.trim().length < 2) {
-      toast.error("Digite o nome da receita para buscar");
-      return;
-    }
-
-    setWebSearchLoading(true);
-    try {
-      const response = await axios.post(`${API}/recipes/search-web`, {
-        query: formData.name.trim()
-      });
-      setWebRecipes(response.data.recipes || []);
-      setShowWebRecipes(true);
-      toast.success(`${response.data.recipes?.length || 0} receitas encontradas!`);
-    } catch (error) {
-      toast.error("Erro ao buscar receitas na web");
-      console.error(error);
-    } finally {
-      setWebSearchLoading(false);
-    }
-  };
-
-  const importRecipeFromWeb = async (url) => {
-    setImportingFromWeb(true);
-    try {
-      const response = await axios.post(`${API}/recipes/import-from-tudogostoso`, {
-        url: url
-      });
-      
-      const importedData = response.data;
-      
-      // Substitui todos os campos do formulário com validações
-      setFormData({
-        ...formData,
-        name: importedData.name || formData.name,
-        portions: importedData.portions || formData.portions,
-        link: importedData.link || url,
-        notes: importedData.notes || formData.notes,
-        ingredients: Array.isArray(importedData.ingredients) ? importedData.ingredients : formData.ingredients,
-        tempo_preparo: importedData.tempo_preparo || 0,
-        calorias_por_porcao: importedData.calorias_por_porcao || 0,
-        custo_estimado: importedData.custo_estimado || 0,
-        restricoes: Array.isArray(importedData.restricoes) ? importedData.restricoes : [],
-        imagem_url: importedData.imagem_url || ""
-      });
-      
-      setShowWebRecipes(false);
-      toast.success("Receita importada com sucesso!");
-    } catch (error) {
-      toast.error("Erro ao importar receita");
-      console.error(error);
-    } finally {
-      setImportingFromWeb(false);
-    }
-  };
-
   const handleIngredientNameChange = async (value) => {
     setCurrentIngredient({ ...currentIngredient, name: value });
 
