@@ -518,63 +518,71 @@ function Recipes({ userName, onLogout }) {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="recipes-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-testid="recipes-grid">
             {filteredRecipes.map((recipe) => (
               <Card 
                 key={recipe.id} 
-                className="hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden cursor-pointer" 
+                className="hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur overflow-hidden cursor-pointer rounded-2xl card-hover" 
                 data-testid={`recipe-card-${recipe.id}`}
                 onClick={() => setViewRecipeDialog(recipe)}
               >
                 {recipe.imagem_url && (
-                  <div className="relative h-48 w-full overflow-hidden">
+                  <div className="relative h-40 sm:h-48 w-full overflow-hidden">
                     <img
                       src={recipe.imagem_url}
                       alt={recipe.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                 )}
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <CardTitle className="text-xl flex-1" style={{ fontFamily: 'Work Sans, sans-serif' }}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <CardTitle className="text-lg sm:text-xl flex-1 line-clamp-2 break-words" style={{ fontFamily: 'Work Sans, sans-serif' }}>
                       {recipe.name}
                     </CardTitle>
                     {recipe.restricoes && recipe.restricoes.length > 0 && (
-                      <div className="flex gap-1 ml-2">
-                        {recipe.restricoes.slice(0, 3).map((rest) => {
+                      <div className="flex gap-1 flex-shrink-0">
+                        {recipe.restricoes.slice(0, 2).map((rest) => {
                           const IconData = RESTRICTION_ICONS[rest];
                           const Icon = IconData?.icon;
                           return Icon ? (
-                            <Icon key={rest} className={`h-5 w-5 ${IconData.color}`} title={IconData.label} />
+                            <Icon key={rest} className={`h-4 w-4 sm:h-5 sm:w-5 ${IconData.color} flex-shrink-0`} title={IconData.label} />
                           ) : null;
                         })}
+                        {recipe.restricoes.length > 2 && (
+                          <span className="text-xs text-gray-500">+{recipe.restricoes.length - 2}</span>
+                        )}
                       </div>
                     )}
                   </div>
                   <CardDescription className="space-y-1">
-                    <div>{recipe.portions} porções • {recipe.ingredients.length} ingredientes</div>
-                    {recipe.tempo_preparo > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <Clock className="h-3 w-3" />
-                        {recipe.tempo_preparo} min
-                      </div>
-                    )}
-                    {recipe.calorias_por_porcao > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <Flame className="h-3 w-3" />
-                        {recipe.calorias_por_porcao} kcal/porção
-                      </div>
-                    )}
-                    {recipe.custo_estimado > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <DollarSign className="h-3 w-3" />
-                        R$ {recipe.custo_estimado.toFixed(2)}
-                      </div>
-                    )}
+                    <div className="text-xs sm:text-sm truncate">
+                      {recipe.portions} porções • {recipe.ingredients.length} ingredientes
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {recipe.tempo_preparo > 0 && (
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{recipe.tempo_preparo} min</span>
+                        </div>
+                      )}
+                      {recipe.calorias_por_porcao > 0 && (
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <Flame className="h-3 w-3 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{recipe.calorias_por_porcao} kcal</span>
+                        </div>
+                      )}
+                      {recipe.custo_estimado > 0 && (
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <DollarSign className="h-3 w-3 flex-shrink-0" />
+                          <span className="whitespace-nowrap">R$ {recipe.custo_estimado.toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-3">
                   <div className="space-y-1">
                     <p className="text-xs font-semibold text-gray-700 mb-1">Ingredientes:</p>
                     {recipe.ingredients.slice(0, 3).map((ing, idx) => (
