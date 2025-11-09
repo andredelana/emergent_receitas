@@ -268,6 +268,12 @@ function RecipeForm({ userName, onLogout }) {
       return;
     }
 
+    // Valida o número de porções
+    if (!formData.portions || formData.portions < 1) {
+      toast.error("Número de porções deve ser pelo menos 1");
+      return;
+    }
+
     // Verifica se precisa estimar valores
     const needsEstimation = 
       formData.tempo_preparo === 0 || 
