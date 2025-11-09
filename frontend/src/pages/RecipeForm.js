@@ -433,26 +433,32 @@ function RecipeForm({ userName, onLogout }) {
                     id="portions"
                     data-testid="recipe-portions-input"
                     type="number"
-                    value={formData.portions}
+                    value={formData.portions === '' ? '' : formData.portions}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Permite campo vazio ou qualquer número inteiro
+                      // Permite campo vazio durante edição
                       if (value === '') {
                         setFormData({ ...formData, portions: '' });
-                      } else {
-                        const numValue = parseInt(value);
-                        if (!isNaN(numValue)) {
-                          setFormData({ ...formData, portions: numValue });
-                        }
+                        return;
+                      }
+                      // Aceita qualquer número inteiro
+                      const numValue = parseInt(value);
+                      if (!isNaN(numValue)) {
+                        setFormData({ ...formData, portions: numValue });
                       }
                     }}
                     onBlur={(e) => {
                       // Se ficar vazio ao sair do campo, define como 1
-                      if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                      const value = e.target.value;
+                      if (value === '' || parseInt(value) < 1 || isNaN(parseInt(value))) {
                         setFormData({ ...formData, portions: 1 });
                       }
                     }}
-                    placeholder="Número de porções"
+                    onFocus={(e) => {
+                      // Seleciona todo o texto quando focar para facilitar sobrescrever
+                      e.target.select();
+                    }}
+                    placeholder="Ex: 4"
                   />
                 </div>
               </div>
